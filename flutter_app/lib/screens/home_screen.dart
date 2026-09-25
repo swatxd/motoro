@@ -10,21 +10,21 @@ import 'qr_contact_screen.dart';
 import 'account_screen.dart';
 import 'login_screen.dart';
 
-class GarageScreen extends StatefulWidget {
+class HomeScreenView extends StatefulWidget {
   final VehicleItem? initialVehicle;
   final String? initialVin;
 
-  const GarageScreen({
+  const HomeScreenView({
     super.key,
     this.initialVehicle,
     this.initialVin,
   });
 
   @override
-  State<GarageScreen> createState() => _GarageScreenState();
+  State<HomeScreenView> createState() => _HomeScreenViewState();
 }
 
-class _GarageScreenState extends State<GarageScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenViewState extends State<HomeScreenView> with SingleTickerProviderStateMixin {
   VehicleItem? _selectedVehicle;
   List<VehicleItem> _vehicles = [];
   bool _isLoading = true;
@@ -1449,7 +1449,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GarageScreen(
+    return HomeScreenView(
       initialVehicle: initialVehicle,
       initialVin: initialVin,
     );

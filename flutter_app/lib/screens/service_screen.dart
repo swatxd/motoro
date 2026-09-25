@@ -823,7 +823,7 @@ class _ServiceScreenState extends State<ServiceScreen> with SingleTickerProvider
   Widget _buildSecondaryNavDock() {
     return FloatingTopNavBar(
       currentIndex: 1, // Services tab
-      currentVehicle: _selectedVehicle,
+      currentVehicle: _vehicle,
     );
   }
 
