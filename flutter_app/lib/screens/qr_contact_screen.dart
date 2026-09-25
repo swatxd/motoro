@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/vehicle.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/floating_top_nav_bar.dart';
 import 'home_screen.dart';
 import 'service_screen.dart';
 import 'fuel_odo_screen.dart';
@@ -690,84 +691,11 @@ class _QrContactScreenState extends State<QrContactScreen> with SingleTickerProv
     );
   }
 
-  // 2. Secondary Navigation Dock matching qr_contact.html
+  // 2. Secondary Navigation Dock matching FloatingTopNavBar
   Widget _buildSecondaryNavDock() {
-    final navItems = [
-      {'label': 'Garage', 'icon': Icons.directions_car_rounded},
-      {'label': 'Services', 'icon': Icons.build_circle_rounded},
-      {'label': 'Fuel & Odo', 'icon': Icons.local_gas_station_rounded},
-      {'label': 'FastTag', 'icon': Icons.toll_rounded},
-      {'label': 'QR Tag', 'icon': Icons.qr_code_scanner_rounded},
-    ];
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(navItems.length, (idx) {
-            final isSelected = idx == 4; // QR Tag is index 4
-            final item = navItems[idx];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: InkWell(
-                onTap: () => _onNavigationTabSelected(idx),
-                borderRadius: BorderRadius.circular(24),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.35),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        item['icon'] as IconData,
-                        size: 16,
-                        color: isSelected ? Colors.white : AppColors.secondary,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        item['label'] as String,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                          color: isSelected ? Colors.white : AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
+    return FloatingTopNavBar(
+      currentIndex: 4, // QR Tag tab
+      currentVehicle: _vehicle,
     );
   }
 

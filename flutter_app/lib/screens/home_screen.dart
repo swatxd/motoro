@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/vehicle.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/floating_top_nav_bar.dart';
 import 'service_screen.dart';
 import 'fuel_odo_screen.dart';
 import 'fasttag_screen.dart';
@@ -1026,117 +1027,11 @@ class _GarageScreenState extends State<GarageScreen> with SingleTickerProviderSt
     );
   }
 
-  // 2. SECONDARY 5-PILL DOCK
+  // 2. SECONDARY ICON-ONLY NAVIGATION DOCK (CENTRALIZED ACTIVE SLIDE)
   Widget _buildSecondaryNavDock() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            // Garage (Active)
-            _buildNavDockPill(
-              title: 'Garage',
-              icon: Icons.garage_rounded,
-              isActive: true,
-              onTap: () {},
-            ),
-            _buildNavDockPill(
-              title: 'Services',
-              icon: Icons.build_circle_rounded,
-              isActive: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => ServiceScreen(initialVehicle: _selectedVehicle)),
-                );
-              },
-            ),
-            _buildNavDockPill(
-              title: 'Fuel & Odo',
-              icon: Icons.local_gas_station_rounded,
-              isActive: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => FuelOdoScreen(initialVehicle: _selectedVehicle)),
-                );
-              },
-            ),
-            _buildNavDockPill(
-              title: 'FastTag',
-              icon: Icons.toll_rounded,
-              isActive: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => FastTagScreen(initialVehicle: _selectedVehicle)),
-                );
-              },
-            ),
-            _buildNavDockPill(
-              title: 'QR Tag',
-              icon: Icons.qr_code_scanner_rounded,
-              isActive: false,
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => QrContactScreen(initialVehicle: _selectedVehicle)),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavDockPill({
-    required String title,
-    required IconData icon,
-    required bool isActive,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-        decoration: BoxDecoration(
-          gradient: isActive
-              ? const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer])
-              : null,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 15, color: isActive ? Colors.white : AppColors.secondary),
-            const SizedBox(width: 5),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
-                color: isActive ? Colors.white : AppColors.secondary,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return FloatingTopNavBar(
+      currentIndex: 0,
+      currentVehicle: _selectedVehicle,
     );
   }
 
