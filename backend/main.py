@@ -1,3 +1,4 @@
+
 """
 MOTORO - Connected Vehicle Fleet & Maintenance System
 FastAPI Backend Services (Driver-Logged Telemetry)
@@ -28,10 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static assets
-assets_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
-if os.path.exists(assets_dir):
-    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+# CORS configured above. Flutter Web assets will be served from root mount.
 
 
 # --- Schemas ---
@@ -672,6 +670,23 @@ def schedule_service(vin: str, request: ServiceScheduleRequest):
         "confirmation_code": code,
         "booking_reference": code
     }
+
+# Mount Flutter Web build at root for seamless hosting
+from fastapi.responses import FileResponse, Response
+
+flutter_web_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "flutter_app", "build", "web")
+if os.path.exists(flutter_web_dir):
+    @app.exception_handler(404)
+    async def not_found_handler(request, exc):
+        path = request.url.path
+        if path.startswith("/api/") or ("." in path.split("/")[-1] and not path.endswith(".html")):
+            return Response(status_code=404, content="Not Found", media_type="text/plain")
+        index_file = os.path.join(flutter_web_dir, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+        return Response(status_code=404, content="Not Found", media_type="text/plain")
+
+    app.mount("/", StaticFiles(directory=flutter_web_dir, html=True), name="flutter_web")
 
 if __name__ == "__main__":
     import uvicorn

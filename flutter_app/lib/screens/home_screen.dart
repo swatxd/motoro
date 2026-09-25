@@ -1,124 +1,160 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../models/vehicle.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/floating_top_nav_bar.dart';
-import 'login_screen.dart';
 import 'service_screen.dart';
+import 'fuel_odo_screen.dart';
+import 'fasttag_screen.dart';
+import 'qr_contact_screen.dart';
+import 'account_screen.dart';
+import 'login_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  final String operatorName;
-  final String operatorEmail;
+class GarageScreen extends StatefulWidget {
+  final VehicleItem? initialVehicle;
   final String? initialVin;
 
-  const HomeScreen({
+  const GarageScreen({
     super.key,
-    this.operatorName = 'Alex Mercer',
-    this.operatorEmail = 'driver@motoro.io',
+    this.initialVehicle,
     this.initialVin,
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<GarageScreen> createState() => _GarageScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _GarageScreenState extends State<GarageScreen> with SingleTickerProviderStateMixin {
+  VehicleItem? _selectedVehicle;
+  List<VehicleItem> _vehicles = [];
   bool _isLoading = true;
 
-  FleetSummary? _fleetSummary;
-  List<VehicleItem> _vehicles = [];
-  VehicleItem? _selectedVehicle;
+  // Animation controller for pulsing indicator
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
-  // Notification alerts
-  final List<Map<String, String>> _notifications = [
-    {
-      'title': 'Service Due Soon',
-      'time': '1 hour ago',
-      'desc': 'Audi RS6 Avant: Oil & Filter replacement recommended in 350 km.',
-      'icon': 'warning',
-    },
-    {
-      'title': 'Fuel Fill-Up Logged',
-      'time': '3 hours ago',
-      'desc': 'Porsche 911 GT3 RS: 45.0 L logged at Shell Express Station.',
-      'icon': 'gas',
-    },
-    {
-      'title': 'Toll Deducted',
-      'time': 'Yesterday',
-      'desc': 'FastTag debited \$4.20 on Express Highway 101.',
-      'icon': 'toll',
-    },
-  ];
+  // Indian States Mapping for HSRP live detection
+  static const Map<String, String> indianStates = {
+    'AN': 'Andaman & Nicobar', 'AP': 'Andhra Pradesh', 'AR': 'Arunachal Pradesh', 'AS': 'Assam',
+    'BR': 'Bihar', 'CG': 'Chhattisgarh', 'CH': 'Chandigarh', 'DD': 'Daman & Diu', 'DL': 'Delhi NCR',
+    'DN': 'Dadra & Nagar', 'GA': 'Goa', 'GJ': 'Gujarat', 'HP': 'Himachal Pradesh', 'HR': 'Haryana',
+    'JH': 'Jharkhand', 'JK': 'Jammu & Kashmir', 'KA': 'Karnataka', 'KL': 'Kerala', 'LA': 'Ladakh',
+    'LD': 'Lakshadweep', 'MH': 'Maharashtra', 'ML': 'Meghalaya', 'MN': 'Manipur', 'MP': 'Madhya Pradesh',
+    'MZ': 'Mizoram', 'NL': 'Nagaland', 'OD': 'Odisha', 'PB': 'Punjab', 'PY': 'Puducherry',
+    'RJ': 'Rajasthan', 'SK': 'Sikkim', 'TN': 'Tamil Nadu', 'TR': 'Tripura', 'TS': 'Telangana',
+    'UK': 'Uttarakhand', 'UP': 'Uttar Pradesh', 'WB': 'West Bengal'
+  };
 
   @override
   void initState() {
     super.initState();
-    _loadFleetData();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.35, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _selectedVehicle = widget.initialVehicle;
+    _loadGarageData();
   }
 
-  Future<void> _loadFleetData() async {
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadGarageData() async {
     setState(() => _isLoading = true);
-    try {
-      final summary = await ApiService.getFleetSummary();
-      final vehicles = await ApiService.getVehicles();
-
-      VehicleItem? activeCar;
-      if (widget.initialVin != null) {
-        activeCar = vehicles.firstWhere(
-          (v) => v.vin == widget.initialVin,
-          orElse: () => vehicles.firstWhere((v) => v.isSelected, orElse: () => vehicles.first),
-        );
-      } else {
-        activeCar = vehicles.firstWhere((v) => v.isSelected, orElse: () => vehicles.first);
-      }
-
-      if (mounted) {
-        setState(() {
-          _fleetSummary = summary;
-          _vehicles = vehicles;
-          _selectedVehicle = activeCar;
-          _isLoading = false;
-        });
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    final list = await ApiService.getVehicles();
+    if (mounted) {
+      setState(() {
+        _vehicles = list;
+        if (_selectedVehicle == null && list.isNotEmpty) {
+          if (widget.initialVin != null) {
+            _selectedVehicle = list.firstWhere(
+              (v) => v.vin == widget.initialVin,
+              orElse: () => list.firstWhere((v) => v.isSelected, orElse: () => list.first),
+            );
+          } else {
+            _selectedVehicle = list.firstWhere((v) => v.isSelected, orElse: () => list.first);
+          }
+        } else if (_selectedVehicle != null) {
+          _selectedVehicle = list.firstWhere((v) => v.vin == _selectedVehicle!.vin, orElse: () => list.first);
+        }
+        _isLoading = false;
+      });
     }
   }
 
-  void _showNotificationToast(String message, {IconData icon = Icons.check_circle_outline}) {
+  void _selectVehicle(VehicleItem vehicle) async {
+    setState(() {
+      _selectedVehicle = vehicle;
+      for (var v in _vehicles) {
+        v.isSelected = (v.vin == vehicle.vin);
+      }
+    });
+    await ApiService.selectVehicle(vehicle.vin);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFF1E2828),
+        backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        duration: const Duration(milliseconds: 2600),
-        content: Row(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(milliseconds: 1800),
+        content: Text('Switched garage fleet to ${vehicle.name} (${vehicle.registrationPlate})'),
+      ),
+    );
+  }
+
+  void _showNotificationsModal() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryContainer.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: AppColors.primaryFixedDim, size: 18),
+            const Row(
+              children: [
+                Icon(Icons.notifications_active_rounded, color: AppColors.primary),
+                SizedBox(width: 8),
+                Text('Fleet & Garage Alerts', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
+            IconButton(
+              icon: const Icon(Icons.close_rounded, size: 20),
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildNotificationItem(
+              title: 'HSRP & FASTag Synchronized',
+              subtitle: 'ICICI FASTag connected to MH 12 RN 2024. Toll pass verified.',
+              time: '10 mins ago',
+              color: Colors.teal,
+              icon: Icons.toll_rounded,
+            ),
+            const SizedBox(height: 10),
+            _buildNotificationItem(
+              title: 'Scheduled Service Due Soon',
+              subtitle: 'Mahindra XUV700 Bay A scheduled in 680 km at Pothens Hub.',
+              time: '1 hour ago',
+              color: AppColors.warning,
+              icon: Icons.build_circle_rounded,
+            ),
+            const SizedBox(height: 10),
+            _buildNotificationItem(
+              title: 'Insurance Policy Active',
+              subtitle: 'Comprehensive cover active till Dec 2026. Zero claims logged.',
+              time: '1 day ago',
+              color: AppColors.success,
+              icon: Icons.verified_user_rounded,
             ),
           ],
         ),
@@ -126,485 +162,604 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _handleSwitchVehicle(VehicleItem vehicle) async {
-    if (vehicle.vin == _selectedVehicle?.vin) return;
-    setState(() => _isLoading = true);
-
-    await ApiService.selectVehicle(vehicle.vin);
-
-    setState(() {
-      for (var v in _vehicles) {
-        v.isSelected = (v.vin == vehicle.vin);
-      }
-      _selectedVehicle = vehicle;
-      _isLoading = false;
-    });
-
-    _showNotificationToast(
-      'Switched active vehicle to ${vehicle.name}',
-      icon: Icons.swap_horiz,
+  Widget _buildNotificationItem({
+    required String title,
+    required String subtitle,
+    required String time,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
+                const SizedBox(height: 2),
+                Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant)),
+                const SizedBox(height: 4),
+                Text(time, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  void _onTopNavTabSelected(int index) {
-    if (index == 0) {
-      // Already on Garage Hub
-      _loadFleetData();
-    } else if (index == 1) {
-      // Navigate to Service & Care screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ServiceScreen(initialVehicle: _selectedVehicle),
-        ),
-      ).then((_) => _loadFleetData());
-    } else if (index == 2) {
-      // Open Fuel & Odometer logs sheet
-      _showDriverLogSheet(initialTab: 0);
-    } else if (index == 3) {
-      // Open Toll Wallet sheet
-      _showWalletRechargeSheet();
-    }
-  }
-
-  // --- Driver Logging Sheet (Fuel & Odometer) ---
-
-  void _showDriverLogSheet({int initialTab = 0}) {
-    final vehicle = _selectedVehicle;
-    if (vehicle == null) return;
+  void _showEnrollVehicleModal() {
+    final modelCtrl = TextEditingController(text: 'Mahindra Scorpio-N Z8 L');
+    final plateCtrl = TextEditingController(text: 'MH 14 JM 8899');
+    final capCtrl = TextEditingController(text: '57');
+    final odoCtrl = TextEditingController(text: '2400');
+    String fuelType = 'Diesel';
+    String fastagBank = 'ICICI Bank FASTag';
+    bool isSubmitting = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _DriverLogModalSheet(
-        vehicle: vehicle,
-        initialTab: initialTab,
-        onLogSaved: (msg) {
-          _loadFleetData();
-          _showNotificationToast(msg, icon: Icons.check_circle);
+      builder: (ctx) => StatefulBuilder(
+        builder: (modalCtx, setModalState) {
+          final rawPlate = plateCtrl.text.toUpperCase().trim();
+          final statePrefix = rawPlate.length >= 2 ? rawPlate.substring(0, 2) : '';
+          final detectedState = indianStates[statePrefix] != null
+              ? '${indianStates[statePrefix]} ($statePrefix)'
+              : 'Bharat HSRP (MoRTH)';
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.90,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: Column(
+              children: [
+                // Modal Handle
+                const SizedBox(height: 12),
+                Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Modal Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [AppColors.primary, AppColors.primaryContainer],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(alpha: 0.25),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(Icons.directions_car_rounded, color: Colors.white, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text(
+                                    'Enroll Indian Car',
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.emerald.withValues(alpha: 0.12),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.emerald,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'MoRTH VAHAN 4.0',
+                                          style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.emerald),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Text(
+                                'Instant HSRP plate verification & FASTag linking',
+                                style: TextStyle(fontSize: 11, color: AppColors.secondary),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: AppColors.secondary),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Divider(height: 1),
+
+                // Modal Body
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Live HSRP Preview Section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'LIVE HSRP EMBOSSED PREVIEW',
+                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.secondary, letterSpacing: 0.8),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                detectedState,
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+
+                        // High Security Registration Plate (HSRP) Metal Simulation
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.white, Colors.grey.shade100, Colors.grey.shade200],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.blueGrey.shade800, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // Left Blue IND Bar
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [Color(0xFF003399), Color(0xFF002266)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.star, color: Colors.amber, size: 10),
+                                    SizedBox(height: 2),
+                                    Text('IND', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10, letterSpacing: 0.5)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+
+                              // Plate Number
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      rawPlate.isEmpty ? 'MH 14 JM 8899' : rawPlate,
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w900,
+                                        fontFamily: 'monospace',
+                                        letterSpacing: 3.5,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    const Text(
+                                      'HSRP 2026-BHARAT • IN90827341',
+                                      style: TextStyle(fontSize: 8, fontFamily: 'monospace', color: Colors.black45, letterSpacing: 1.2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Security Screw Icon
+                              Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade400,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.grey.shade600, width: 1),
+                                ),
+                                child: const Center(
+                                  child: Text('+', style: TextStyle(fontSize: 8, color: Colors.black54, fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Popular Indian Models (1-Tap Quick Select Presets)
+                        const Text(
+                          'POPULAR INDIAN MODELS (1-TAP SELECT)',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.secondary, letterSpacing: 0.8),
+                        ),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _buildPresetChip(
+                              title: 'Scorpio-N Z8 L',
+                              subtitle: 'Diesel 4XPLOR • 57L',
+                              onTap: () {
+                                setModalState(() {
+                                  modelCtrl.text = 'Mahindra Scorpio-N Z8 L';
+                                  fuelType = 'Diesel';
+                                  capCtrl.text = '57';
+                                });
+                              },
+                            ),
+                            _buildPresetChip(
+                              title: 'Tata Safari Dark',
+                              subtitle: 'Kryotec 2.0L • 50L',
+                              onTap: () {
+                                setModalState(() {
+                                  modelCtrl.text = 'Tata Safari Dark Edition';
+                                  fuelType = 'Diesel';
+                                  capCtrl.text = '50';
+                                });
+                              },
+                            ),
+                            _buildPresetChip(
+                              title: 'Tata Harrier',
+                              subtitle: 'Fearless+ • 50L',
+                              onTap: () {
+                                setModalState(() {
+                                  modelCtrl.text = 'Tata Harrier Fearless+';
+                                  fuelType = 'Diesel';
+                                  capCtrl.text = '50';
+                                });
+                              },
+                            ),
+                            _buildPresetChip(
+                              title: 'Hyundai Creta',
+                              subtitle: '1.5L Turbo • 50L',
+                              onTap: () {
+                                setModalState(() {
+                                  modelCtrl.text = 'Hyundai Creta SX(O)';
+                                  fuelType = 'Petrol';
+                                  capCtrl.text = '50';
+                                });
+                              },
+                            ),
+                            _buildPresetChip(
+                              title: 'Fortuner Legender',
+                              subtitle: 'Diesel 4x4 • 80L',
+                              onTap: () {
+                                setModalState(() {
+                                  modelCtrl.text = 'Toyota Fortuner Legender';
+                                  fuelType = 'Diesel';
+                                  capCtrl.text = '80';
+                                });
+                              },
+                            ),
+                            _buildPresetChip(
+                              title: 'Nexon EV Empowered',
+                              subtitle: 'Electric • 40.5 kWh',
+                              onTap: () {
+                                setModalState(() {
+                                  modelCtrl.text = 'Tata Nexon EV Empowered';
+                                  fuelType = 'Electric';
+                                  capCtrl.text = '40.5';
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Form Inputs
+                        TextField(
+                          controller: modelCtrl,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                          decoration: InputDecoration(
+                            labelText: 'Car Make & Model',
+                            prefixIcon: const Icon(Icons.directions_car_rounded, color: AppColors.primary, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Registration plate input
+                        TextField(
+                          controller: plateCtrl,
+                          textCapitalization: TextCapitalization.characters,
+                          onChanged: (_) => setModalState(() {}),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'monospace', letterSpacing: 1.5),
+                          decoration: InputDecoration(
+                            labelText: 'Registration Plate (HSRP)',
+                            prefixIcon: const Icon(Icons.badge_rounded, color: AppColors.primary, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Fuel & Capacity Row
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: DropdownButtonFormField<String>(
+                                initialValue: fuelType,
+                                decoration: InputDecoration(
+                                  labelText: 'Powertrain',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'Diesel', child: Text('Diesel mHawk')),
+                                  DropdownMenuItem(value: 'Petrol', child: Text('Petrol Turbo')),
+                                  DropdownMenuItem(value: 'Electric', child: Text('Electric (EV)')),
+                                  DropdownMenuItem(value: 'CNG', child: Text('CNG Bi-Fuel')),
+                                ],
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setModalState(() {
+                                      fuelType = val;
+                                      if (val == 'Electric') {
+                                        capCtrl.text = '40.5';
+                                      } else if (val == 'CNG') {
+                                        capCtrl.text = '60';
+                                      } else {
+                                        capCtrl.text = '57';
+                                      }
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: TextField(
+                                controller: capCtrl,
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                decoration: InputDecoration(
+                                  labelText: fuelType == 'Electric' ? 'Battery (kWh)' : 'Tank (Litres)',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // FASTag Provider & Odometer
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: DropdownButtonFormField<String>(
+                                initialValue: fastagBank,
+                                decoration: InputDecoration(
+                                  labelText: 'FASTag Provider',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'ICICI Bank FASTag', child: Text('ICICI Bank')),
+                                  DropdownMenuItem(value: 'HDFC Bank FASTag', child: Text('HDFC Bank')),
+                                  DropdownMenuItem(value: 'SBI FASTag', child: Text('SBI FASTag')),
+                                  DropdownMenuItem(value: 'Paytm FASTag', child: Text('Paytm Bank')),
+                                  DropdownMenuItem(value: 'Axis Bank FASTag', child: Text('Axis Bank')),
+                                ],
+                                onChanged: (val) {
+                                  if (val != null) setModalState(() => fastagBank = val);
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: TextField(
+                                controller: odoCtrl,
+                                keyboardType: TextInputType.number,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'monospace'),
+                                decoration: InputDecoration(
+                                  labelText: 'Odo (km)',
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Submit Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: isSubmitting
+                                ? null
+                                : () async {
+                                    setModalState(() => isSubmitting = true);
+                                    await Future.delayed(const Duration(milliseconds: 1000));
+
+                                    final name = modelCtrl.text.trim().isNotEmpty ? modelCtrl.text.trim() : 'Mahindra Scorpio-N';
+                                    final plate = rawPlate.isNotEmpty ? rawPlate : 'MH 14 JM 8899';
+                                    final vin = 'IND-${plate.replaceAll(' ', '-')}';
+                                    final cap = double.tryParse(capCtrl.text) ?? 57.0;
+                                    final odo = int.tryParse(odoCtrl.text) ?? 2400;
+
+                                    final newVehicle = VehicleItem(
+                                      vin: vin,
+                                      name: name,
+                                      edition: '$fuelType • VAHAN Enrolled',
+                                      typeLabel: 'Indian Fleet Vehicle',
+                                      fuelType: fuelType,
+                                      status: 'In Garage • Ready',
+                                      isOnline: true,
+                                      fuelLevelPercent: 82.0,
+                                      fuelCapacityLitres: cap,
+                                      rangeKm: (cap * 14.2).toInt(),
+                                      odometerKm: odo,
+                                      locationName: 'Home Bay',
+                                      imageUrl: fuelType == 'Electric'
+                                          ? 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80'
+                                          : 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80',
+                                      isSelected: true,
+                                      registrationPlate: plate,
+                                      fastTagId: fastagBank,
+                                    );
+
+                                    setState(() {
+                                      for (var v in _vehicles) {
+                                        v.isSelected = false;
+                                      }
+                                      _vehicles.add(newVehicle);
+                                      _selectedVehicle = newVehicle;
+                                    });
+
+                                    if (!modalCtx.mounted) return;
+                                    Navigator.pop(modalCtx);
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: AppColors.success,
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        content: Row(
+                                          children: [
+                                            const Icon(Icons.verified_rounded, color: Colors.white, size: 20),
+                                            const SizedBox(width: 8),
+                                            Expanded(child: Text('🎉 $name ($plate) enrolled via MoRTH VAHAN 4.0!')),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                            child: isSubmitting
+                                ? const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                                      SizedBox(width: 12),
+                                      Text('Verifying VAHAN & Enrolling...', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    ],
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.verified_rounded, size: 18),
+                                      SizedBox(width: 8),
+                                      Text('Verify VAHAN & Add to Garage Fleet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
         },
       ),
     );
   }
 
-  void _showWalletRechargeSheet() {
-    final controller = TextEditingController(text: '50.00');
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-          top: 24,
-          left: 24,
-          right: 24,
+  Widget _buildPresetChip({
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.toll, color: AppColors.primary, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Recharge FastTag Wallet',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  icon: const Icon(Icons.close, size: 20),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Current Balance: \$${(_fleetSummary?.tollWalletBalance ?? 124.50).toStringAsFixed(2)} • Auto-Reload Active',
-              style: const TextStyle(fontSize: 13, color: AppColors.secondary),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [25, 50, 100].map((amt) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ActionChip(
-                    label: Text('\$$amt'),
-                    backgroundColor: AppColors.surfaceContainerLow,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
-                    onPressed: () {
-                      controller.text = amt.toStringAsFixed(2);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                labelText: 'Recharge Amount (\$)',
-                prefixIcon: const Icon(Icons.attach_money, color: AppColors.primary),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final amt = double.tryParse(controller.text);
-                  if (amt != null && amt > 0) {
-                    Navigator.pop(ctx);
-                    final msg = await ApiService.rechargeWallet(amt);
-                    setState(() {
-                      if (_fleetSummary != null) {
-                        _fleetSummary = FleetSummary(
-                          totalVehicles: _fleetSummary!.totalVehicles,
-                          activeCount: _fleetSummary!.activeCount,
-                          parkedCount: _fleetSummary!.parkedCount,
-                          fleetMileageKm: _fleetSummary!.fleetMileageKm,
-                          avgEfficiency: _fleetSummary!.avgEfficiency,
-                          nextServiceDays: _fleetSummary!.nextServiceDays,
-                          tollWalletBalance: _fleetSummary!.tollWalletBalance + amt,
-                          selectedVin: _fleetSummary!.selectedVin,
-                        );
-                      }
-                    });
-                    _showNotificationToast(msg, icon: Icons.credit_card);
-                  }
-                },
-                child: const Text('Complete Instant Recharge'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showPairVehicleModal() {
-    final nameCtrl = TextEditingController();
-    final vinCtrl = TextEditingController();
-    String selectedFuel = 'Petrol';
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (dialogCtx, setDialogState) => AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.add_circle_outline, color: AppColors.primary, size: 22),
-              ),
-              const SizedBox(width: 12),
-              const Text(
-                'Enroll Vehicle',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Add a combustion or hybrid vehicle to your MOTORO fleet management account.',
-                style: TextStyle(fontSize: 12, color: AppColors.secondary),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: nameCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Vehicle Model / Nickname',
-                  hintText: 'e.g. Porsche 911 GT3 RS',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: vinCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Vehicle VIN',
-                  hintText: 'e.g. MOTORO-911-GT3',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: selectedFuel,
-                decoration: InputDecoration(
-                  labelText: 'Engine & Fuel Type',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'Petrol', child: Text('Petrol (95/98 Octane)')),
-                  DropdownMenuItem(value: 'Diesel', child: Text('Turbo Diesel')),
-                  DropdownMenuItem(value: 'Hybrid', child: Text('Plug-in / Mild Hybrid')),
-                ],
-                onChanged: (val) {
-                  if (val != null) {
-                    setDialogState(() => selectedFuel = val);
-                  }
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.secondary)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                final newName = nameCtrl.text.trim().isNotEmpty ? nameCtrl.text.trim() : 'New Vehicle';
-                final newVin = vinCtrl.text.trim().isNotEmpty ? vinCtrl.text.trim().toUpperCase() : 'MOTORO-${DateTime.now().millisecond}';
-
-                final newCar = VehicleItem(
-                  vin: newVin,
-                  name: newName,
-                  edition: 'Enrolled • Driver-Logged',
-                  typeLabel: 'Fleet Vehicle',
-                  fuelType: selectedFuel,
-                  status: 'In Garage • Ready',
-                  isOnline: true,
-                  fuelLevelPercent: 80.0,
-                  fuelCapacityLitres: 60.0,
-                  rangeKm: 460,
-                  odometerKm: 5000,
-                  serviceDueKm: 1500,
-                  locationName: 'Home Garage',
-                  imageUrl: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=80',
-                  isSelected: true,
-                );
-
-                setState(() {
-                  for (var v in _vehicles) {
-                    v.isSelected = false;
-                  }
-                  _vehicles.add(newCar);
-                  _selectedVehicle = newCar;
-                });
-
-                _showNotificationToast('$newName enrolled & active in fleet!', icon: Icons.check_circle);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: const Text('Enroll Vehicle'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showNotificationsSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.notifications_active, color: AppColors.primary, size: 22),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Fleet Alerts & Notices',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onSurface),
-                    ),
-                  ],
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() => _notifications.clear());
-                    Navigator.pop(ctx);
-                  },
-                  child: const Text('Clear All', style: TextStyle(color: AppColors.primary, fontSize: 13)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_notifications.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(
-                  child: Text('No active notifications or alerts.', style: TextStyle(color: AppColors.secondary)),
-                ),
-              )
-            else
-              ..._notifications.map((n) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainerLow,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          n['icon'] == 'warning' ? Icons.warning_amber_rounded : Icons.notifications,
-                          color: n['icon'] == 'warning' ? AppColors.error : AppColors.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    n['title']!,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.onSurface),
-                                  ),
-                                  Text(
-                                    n['time']!,
-                                    style: const TextStyle(fontSize: 11, color: AppColors.outline),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                n['desc']!,
-                                style: const TextStyle(fontSize: 12, color: AppColors.secondary),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showProfileMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: AppColors.primary,
-                  child: Text(
-                    widget.operatorName.isNotEmpty ? widget.operatorName[0].toUpperCase() : 'M',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.operatorName,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface),
-                    ),
-                    Text(
-                      widget.operatorEmail,
-                      style: const TextStyle(fontSize: 12, color: AppColors.secondary),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.directions_car, color: AppColors.primary),
-              title: const Text('Managed Vehicles', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              trailing: Text('${_vehicles.length} cars', style: const TextStyle(color: AppColors.outline, fontSize: 13)),
-              onTap: () => Navigator.pop(ctx),
-            ),
-            ListTile(
-              leading: const Icon(Icons.build_circle_outlined, color: AppColors.primary),
-              title: const Text('Service & Care Schedule', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.outline),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ServiceScreen(initialVehicle: _selectedVehicle),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: AppColors.error),
-              title: const Text('Log Out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.error)),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                );
-              },
-            ),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppColors.onSurface)),
+            Text(subtitle, style: const TextStyle(fontSize: 9, color: AppColors.secondary)),
           ],
         ),
       ),
@@ -613,213 +768,72 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final hasAlert = _vehicles.any((v) => v.serviceAlert != null);
-
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Stack(
-        children: [
-          // Atmospheric Ambient Glow Blobs
-          Positioned(
-            top: -60,
-            left: -80,
-            child: _buildAtmosphericGlow(
-              color: AppColors.primaryFixedDim.withValues(alpha: 0.25),
-              diameter: 280,
-            ),
-          ),
-          Positioned(
-            top: 360,
-            right: -100,
-            child: _buildAtmosphericGlow(
-              color: AppColors.primaryContainer.withValues(alpha: 0.16),
-              diameter: 320,
-            ),
-          ),
-          Positioned(
-            bottom: 60,
-            left: -40,
-            child: _buildAtmosphericGlow(
-              color: AppColors.tertiaryFixedDim.withValues(alpha: 0.2),
-              diameter: 360,
-            ),
-          ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // MASTER TOP APP BAR
+            _buildMasterTopAppBar(),
 
-          // Main View Body
-          Column(
-            children: [
-              _buildTopHeader(),
-              // Floating Top Navigation Bar
-              FloatingTopNavBar(
-                currentIndex: 0,
-                hasServiceAlert: hasAlert,
-                onTabSelected: _onTopNavTabSelected,
-              ),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-                    : RefreshIndicator(
-                        color: AppColors.primary,
-                        onRefresh: _loadFleetData,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                          child: Center(
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 820),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildSection1FleetMacroPulse(),
-                                  const SizedBox(height: 20),
-                                  _buildSection2HeroVehiclePod(),
-                                  const SizedBox(height: 16),
-                                  _buildOtherVehiclesPod(),
-                                  const SizedBox(height: 14),
-                                  _buildPairNewVehicleTile(),
-                                  const SizedBox(height: 24),
-                                  _buildSection3ManualActionPods(),
-                                  const SizedBox(height: 24),
-                                  _buildSection4FleetShortcuts(),
-                                  const SizedBox(height: 48),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+            // SECONDARY 5-PILL DOCK
+            _buildSecondaryNavDock(),
+
+            // MAIN SCROLLABLE CONTENT
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // PAGE TITLE & ACTION BANNER
+                          _buildHeaderBanner(),
+                          const SizedBox(height: 16),
+
+                          // FLEET DOSSIER VEHICLE CARDS
+                          ..._vehicles.map((car) => _buildFleetVehicleCard(car)),
+                          const SizedBox(height: 24),
+                        ],
                       ),
-              ),
-            ],
-          ),
-        ],
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildAtmosphericGlow({required Color color, required double diameter}) {
+  // 1. MASTER TOP APP BAR
+  Widget _buildMasterTopAppBar() {
     return Container(
-      width: diameter,
-      height: diameter,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 70, sigmaY: 70),
-        child: Container(color: Colors.transparent),
-      ),
-    );
-  }
-
-  // --- Top Header ---
-
-  Widget _buildTopHeader() {
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 8,
-        left: 20,
-        right: 20,
-        bottom: 8,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.88),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryContainer.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.95),
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Logo & Brand
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  gradient: AppGradients.primaryGradient,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.directions_car, color: Colors.white, size: 20),
-              ),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'MOTORO',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                          letterSpacing: 1.5,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    'Driver-Logged Telemetry Hub',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          // Actions (Notifications & Profile)
-          Row(
-            children: [
-              Stack(
-                children: [
-                  IconButton(
-                    onPressed: _showNotificationsSheet,
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.surfaceContainerLow.withValues(alpha: 0.8),
-                    ),
-                    icon: const Icon(Icons.notifications_outlined, size: 20, color: AppColors.onSurfaceVariant),
-                  ),
-                  if (_notifications.isNotEmpty)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.error,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: _showProfileMenu,
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: 38,
-                  height: 38,
+          // Brand Logo with Tricolor Bharat Badge
+          InkWell(
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => HomeScreen(initialVin: _selectedVehicle?.vin)),
+              );
+            },
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
-                    gradient: AppGradients.primaryGradient,
-                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryContainer],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primary.withValues(alpha: 0.25),
@@ -828,867 +842,659 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Icon(Icons.person, color: Colors.white, size: 20),
+                  child: const Icon(Icons.toll_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'MOTORO',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                    letterSpacing: -0.5,
+                    color: AppColors.onSurface,
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Section 1: Fleet Macro Pulse ---
-
-  Widget _buildSection1FleetMacroPulse() {
-    final summary = _fleetSummary;
-    final totalVehicles = summary?.totalVehicles ?? _vehicles.length;
-    final mileage = summary?.fleetMileageKm ?? 48210;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+                const SizedBox(width: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Fleet Overview',
+                        'BHARAT',
                         style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.onSurface,
-                          letterSpacing: -0.5,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: AppColors.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '$totalVehicles Cars Managed',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'Manual driver logs, fuel tracking, and lifecycle service schedules',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Refresh Button
-            IconButton(
-              onPressed: _loadFleetData,
-              icon: const Icon(Icons.refresh, color: AppColors.primary, size: 20),
-              tooltip: 'Sync Fleet Data',
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        // Macro Pill Bar
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildMacroPill(
-                icon: Icons.speed,
-                iconColor: AppColors.primary,
-                label: 'Combined Odometer',
-                value: '${mileage.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")} km',
-              ),
-              const SizedBox(width: 8),
-              _buildMacroPill(
-                icon: Icons.local_gas_station_rounded,
-                iconColor: AppColors.tertiary,
-                label: 'Fleet Efficiency',
-                value: summary?.avgEfficiency ?? '14.8 km/L',
-              ),
-              const SizedBox(width: 8),
-              _buildMacroPill(
-                icon: Icons.account_balance_wallet_outlined,
-                iconColor: AppColors.primaryContainer,
-                label: 'Toll Wallet',
-                value: '\$${(summary?.tollWalletBalance ?? 124.50).toStringAsFixed(2)}',
-                valueColor: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              _buildMacroPill(
-                icon: Icons.event_available_outlined,
-                iconColor: AppColors.secondary,
-                label: 'Next Maintenance',
-                value: 'In ${summary?.nextServiceDays ?? 14} days',
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMacroPill({
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required String value,
-    Color? valueColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryContainer.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: iconColor, size: 18),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant)),
-              Text(
-                value,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: valueColor ?? AppColors.onSurface,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- Section 2: Primary Selected Vehicle (Hero Pod) ---
-
-  Widget _buildSection2HeroVehiclePod() {
-    final vehicle = _selectedVehicle ?? (_vehicles.isNotEmpty ? _vehicles.first : null);
-    if (vehicle == null) return const SizedBox.shrink();
-
-    final remainingLitres = (vehicle.fuelCapacityLitres * vehicle.fuelLevelPercent / 100.0);
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryContainer.withValues(alpha: 0.14),
-            blurRadius: 32,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header info
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryFixed,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
+                      const SizedBox(width: 4),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: SizedBox(
+                          width: 12,
+                          height: 8,
+                          child: Column(
                             children: [
-                              Icon(Icons.fiber_manual_record, size: 8, color: AppColors.primary),
-                              SizedBox(width: 4),
-                              Text(
-                                'Active Profile',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.onPrimaryFixed,
-                                ),
-                              ),
+                              Container(height: 2.66, color: const Color(0xFFFF9933)),
+                              Container(height: 2.66, color: Colors.white),
+                              Container(height: 2.66, color: const Color(0xFF138808)),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            vehicle.fuelType,
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      vehicle.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.onSurface,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    Text(
-                      vehicle.edition,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 11, color: AppColors.secondary),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Fuel Tank Gauge
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.local_gas_station_rounded, color: AppColors.primary, size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${vehicle.fuelLevelPercent.toStringAsFixed(0)}%',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                          color: AppColors.primary,
-                        ),
                       ),
                     ],
-                  ),
-                  Text(
-                    '${remainingLitres.toStringAsFixed(1)} / ${vehicle.fuelCapacityLitres.toStringAsFixed(0)} L',
-                    style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant),
-                  ),
-                  Text(
-                    '${vehicle.rangeKm} km est. range',
-                    style: const TextStyle(fontSize: 10, color: AppColors.outline),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Vehicle Visual Display
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: Stack(
-              children: [
-                Container(
-                  height: 175,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainer,
-                    image: DecorationImage(
-                      image: NetworkImage(vehicle.imageUrl),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                // Gradient Scrim
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withValues(alpha: 0.55),
-                          Colors.transparent,
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                // Status Overlay: In Garage / Location
-                Positioned(
-                  bottom: 12,
-                  left: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.88),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.home_work_outlined, color: AppColors.primary, size: 14),
-                        const SizedBox(width: 5),
-                        Text(
-                          vehicle.locationName,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                // Odometer Overlay
-                Positioned(
-                  bottom: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.88),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.speed, color: AppColors.secondary, size: 14),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${vehicle.odometerKm.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")} km',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
-
-          // Driver Action Quick Buttons (Fuel Log, Odometer, Service)
+          // Right Controls: Vehicle Switcher Pill, Notification, Profile
           Row(
             children: [
-              Expanded(
-                child: _buildDriverActionButton(
-                  icon: Icons.local_gas_station_rounded,
-                  label: 'Log Fuel',
-                  color: AppColors.primary,
-                  onTap: () => _showDriverLogSheet(initialTab: 0),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildDriverActionButton(
-                  icon: Icons.speed_rounded,
-                  label: 'Log Odometer',
-                  color: AppColors.tertiary,
-                  onTap: () => _showDriverLogSheet(initialTab: 1),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildDriverActionButton(
-                  icon: Icons.build_circle_rounded,
-                  label: 'Book Service',
-                  color: AppColors.primaryContainer,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ServiceScreen(initialVehicle: vehicle),
-                      ),
-                    ).then((_) => _loadFleetData());
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDriverActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: color.withValues(alpha: 0.25),
-            width: 1.2,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- Section 2b: Other Vehicles In Garage Pod ---
-
-  Widget _buildOtherVehiclesPod() {
-    final otherCars = _vehicles.where((v) => v.vin != _selectedVehicle?.vin).toList();
-    if (otherCars.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'OTHER FLEET VEHICLES',
-          style: TextStyle(
-            fontSize: 11,
-            letterSpacing: 1.5,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 10),
-        ...otherCars.map((car) {
-          final isWarning = car.serviceAlert != null;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.88),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryContainer.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.network(
-                          car.imageUrl,
-                          width: 52,
-                          height: 52,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
+              // Vehicle Switcher Pill
+              PopupMenuButton<VehicleItem>(
+                initialValue: _selectedVehicle,
+                tooltip: 'Switch Fleet Vehicle',
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                onSelected: (veh) => _selectVehicle(veh),
+                itemBuilder: (ctx) => _vehicles.map((v) {
+                  final isCurr = v.vin == _selectedVehicle?.vin;
+                  return PopupMenuItem<VehicleItem>(
+                    value: v,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    car.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.onSurface),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: isWarning ? AppColors.errorContainer : AppColors.secondaryContainer,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    isWarning ? 'Service Due' : car.fuelType,
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: isWarning ? AppColors.error : AppColors.onSecondaryContainer,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
+                            Text(v.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                             Text(
-                              isWarning ? (car.serviceAlert ?? '') : (car.driverInfo ?? car.edition),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: isWarning ? AppColors.error : AppColors.onSurfaceVariant,
-                                fontWeight: isWarning ? FontWeight.w500 : FontWeight.normal,
-                              ),
+                              '${v.registrationPlate} • ${v.fuelType}',
+                              style: const TextStyle(fontSize: 10, color: AppColors.secondary, fontFamily: 'monospace'),
                             ),
                           ],
                         ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _handleSwitchVehicle(car),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isWarning ? AppColors.surfaceContainerHigh : AppColors.secondary,
-                          foregroundColor: isWarning ? AppColors.onSurface : Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        ),
-                        child: const Text('Switch', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
+                        if (isCurr)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.emerald.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text('Active', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.emerald)),
+                          ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey.shade300),
                   ),
-                  const SizedBox(height: 10),
-                  // Quick info pills
-                  Row(
+                  child: Row(
                     children: [
-                      Expanded(
+                      FadeTransition(
+                        opacity: _pulseAnimation,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          width: 8,
+                          height: 8,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerLow.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.local_gas_station_rounded, size: 14, color: AppColors.primary),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  '${car.fuelLevelPercent.toInt()}% (${car.rangeKm} km)',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                            color: AppColors.emerald,
+                            shape: BoxShape.circle,
                           ),
                         ),
                       ),
                       const SizedBox(width: 6),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerLow.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.speed, size: 14, color: AppColors.secondary),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  '${car.odometerKm} km',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
+                      Text(
+                        _selectedVehicle?.registrationPlate ?? 'MH 12 RN 2024',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'monospace',
+                          color: AppColors.onSurface,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceContainerLow.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.build_outlined, size: 14, color: AppColors.tertiary),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  car.serviceDueKm != null ? '${car.serviceDueKm} km due' : 'Inspected',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      const Icon(Icons.arrow_drop_down, size: 16, color: AppColors.secondary),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          );
-        }),
-      ],
+              const SizedBox(width: 8),
+
+              // Notifications
+              IconButton(
+                icon: const Stack(
+                  children: [
+                    Icon(Icons.notifications_none_rounded, size: 22, color: AppColors.secondary),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: CircleAvatar(radius: 4, backgroundColor: AppColors.primary),
+                    ),
+                  ],
+                ),
+                onPressed: _showNotificationsModal,
+              ),
+
+              // Profile Avatar "VS" -> AccountScreen
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AccountScreen()),
+                  );
+                },
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer]),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Center(
+                    child: Text('VS', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+
+              // Logout Icon -> LoginScreen
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, size: 18, color: AppColors.secondary),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildPairNewVehicleTile() {
-    return InkWell(
-      onTap: _showPairVehicleModal,
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceContainerLow.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
-        ),
+  // 2. SECONDARY 5-PILL DOCK
+  Widget _buildSecondaryNavDock() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
         child: Row(
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const Icon(Icons.add_circle, color: AppColors.primary, size: 24),
+            // Garage (Active)
+            _buildNavDockPill(
+              title: 'Garage',
+              icon: Icons.garage_rounded,
+              isActive: true,
+              onTap: () {},
             ),
-            const SizedBox(width: 14),
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Enroll Another Vehicle',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.onSurface),
-                  ),
-                  Text(
-                    'Add Petrol, Diesel, or Hybrid car to your driver management list',
-                    style: TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant),
-                  ),
-                ],
-              ),
+            _buildNavDockPill(
+              title: 'Services',
+              icon: Icons.build_circle_rounded,
+              isActive: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => ServiceScreen(initialVehicle: _selectedVehicle)),
+                );
+              },
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.onSurfaceVariant),
+            _buildNavDockPill(
+              title: 'Fuel & Odo',
+              icon: Icons.local_gas_station_rounded,
+              isActive: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => FuelOdoScreen(initialVehicle: _selectedVehicle)),
+                );
+              },
+            ),
+            _buildNavDockPill(
+              title: 'FastTag',
+              icon: Icons.toll_rounded,
+              isActive: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => FastTagScreen(initialVehicle: _selectedVehicle)),
+                );
+              },
+            ),
+            _buildNavDockPill(
+              title: 'QR Tag',
+              icon: Icons.qr_code_scanner_rounded,
+              isActive: false,
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => QrContactScreen(initialVehicle: _selectedVehicle)),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  // --- Section 3: Driver Manual Telemetry Pods (2x2 Grid) ---
-
-  Widget _buildSection3ManualActionPods() {
-    final vehicle = _selectedVehicle;
-    if (vehicle == null) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildNavDockPill({
+    required String title,
+    required IconData icon,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          gradient: isActive
+              ? const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer])
+              : null,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            Icon(icon, size: 15, color: isActive ? Colors.white : AppColors.secondary),
+            const SizedBox(width: 5),
             Text(
-              '${vehicle.name} • Driver Pods',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.onSurface),
-            ),
-            IconButton(
-              onPressed: () => _showDriverLogSheet(initialTab: 0),
-              icon: const Icon(Icons.post_add_rounded, color: AppColors.primary, size: 22),
-              tooltip: 'Open Logbook',
+              title,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                color: isActive ? Colors.white : AppColors.secondary,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.15,
+      ),
+    );
+  }
+
+  // 3. PAGE HEADER & TITLE BANNER
+  Widget _buildHeaderBanner() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Pod 1: Quick Fuel Log
-            _buildTelemetryTile(
-              title: 'Fuel Tank Level',
-              icon: Icons.local_gas_station_rounded,
-              iconColor: AppColors.primary,
-              value: '${vehicle.fuelLevelPercent.toStringAsFixed(0)}%',
-              unit: '${vehicle.fuelCapacityLitres.toStringAsFixed(0)} L Tank Capacity',
-              actionLabel: '+ Fuel Fill-Up',
-              actionColor: AppColors.primary,
-              onAction: () => _showDriverLogSheet(initialTab: 0),
-            ),
-            // Pod 2: Quick Odometer Log
-            _buildTelemetryTile(
-              title: 'Odometer Reading',
-              icon: Icons.speed_rounded,
-              iconColor: AppColors.tertiary,
-              value: vehicle.odometerKm.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]},"),
-              unit: 'km verified reading',
-              actionLabel: '+ Log Reading',
-              actionColor: AppColors.tertiary,
-              onAction: () => _showDriverLogSheet(initialTab: 1),
-            ),
-            // Pod 3: Fuel Economy / Mileage
-            _buildTelemetryTile(
-              title: 'Calculated Mileage',
-              icon: Icons.eco_rounded,
-              iconColor: AppColors.primaryContainer,
-              value: _fleetSummary?.avgEfficiency ?? '14.8 km/L',
-              unit: 'Driver log estimate',
-              actionLabel: 'View Logbook',
-              actionColor: AppColors.primary,
-              onAction: () => _showDriverLogSheet(initialTab: 0),
-            ),
-            // Pod 4: Maintenance Countdown
-            _buildTelemetryTile(
-              title: 'Service Countdown',
-              icon: Icons.build_circle_outlined,
-              iconColor: vehicle.serviceAlert != null ? AppColors.error : AppColors.secondary,
-              value: vehicle.serviceDueKm != null ? '${vehicle.serviceDueKm} km' : 'Scheduled',
-              unit: vehicle.serviceAlert != null ? 'Action Due' : 'All Clear',
-              actionLabel: 'Book Care',
-              actionColor: vehicle.serviceAlert != null ? AppColors.error : AppColors.secondary,
-              onAction: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ServiceScreen(initialVehicle: vehicle),
+            Row(
+              children: [
+                const Text(
+                  'Indian Garage Fleet',
+                  style: TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface,
                   ),
-                ).then((_) => _loadFleetData());
-              },
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  ),
+                  child: Text(
+                    '${_vehicles.length} Enrolled',
+                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              'Manage VAHAN registration, insurance, FASTag & telemetry.',
+              style: TextStyle(fontSize: 11, color: AppColors.secondary),
             ),
           ],
+        ),
+        ElevatedButton.icon(
+          onPressed: _showEnrollVehicleModal,
+          icon: const Icon(Icons.add_circle_rounded, size: 16),
+          label: const Text('Enroll Car', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildTelemetryTile({
-    required String title,
-    required IconData icon,
-    required Color iconColor,
-    required String value,
-    required String unit,
-    required String actionLabel,
-    required Color actionColor,
-    required VoidCallback onAction,
-  }) {
+  // 4. FLEET DOSSIER VEHICLE CARD
+  Widget _buildFleetVehicleCard(VehicleItem car) {
+    final isSelected = car.vin == _selectedVehicle?.vin;
+    final isElectric = car.fuelType.toLowerCase().contains('electric') || car.fuelType.toLowerCase().contains('ev');
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 18),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isSelected ? AppColors.primary : Colors.grey.shade200,
+          width: isSelected ? 2 : 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryContainer.withValues(alpha: 0.06),
+            color: isSelected ? AppColors.primary.withValues(alpha: 0.10) : Colors.black.withValues(alpha: 0.04),
             blurRadius: 16,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Vehicle Image Container with Badges
+          Stack(
             children: [
-              Flexible(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceVariant),
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 180,
+                  child: Image.network(
+                    car.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (ctx, err, stack) => Container(
+                      color: Colors.grey.shade200,
+                      child: const Center(
+                        child: Icon(Icons.directions_car_rounded, size: 48, color: AppColors.secondary),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              Icon(icon, color: iconColor, size: 18),
+
+              // Top Status Badge
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.success
+                              : (isElectric ? Colors.cyanAccent : Colors.amberAccent),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isSelected
+                            ? 'ACTIVE IN FLEET'
+                            : (isElectric ? 'STANDBY EV' : 'STANDBY FLEET'),
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Bottom-Right HSRP Plate Tag
+              Positioned(
+                bottom: 12,
+                right: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.75),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  ),
+                  child: Text(
+                    car.registrationPlate,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: 'monospace',
+                      color: AppColors.primaryFixed,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.onSurface),
-              ),
-              Text(
-                unit,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 10, color: AppColors.secondary),
-              ),
-            ],
-          ),
-          SizedBox(
-            width: double.infinity,
-            height: 32,
-            child: TextButton(
-              onPressed: onAction,
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.surfaceContainerLow,
-                foregroundColor: actionColor,
-                padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: Text(
-                actionLabel,
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: actionColor),
-              ),
+
+          // Card Content
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Powertrain Chips
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isElectric
+                            ? Colors.teal.shade50
+                            : AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        isElectric
+                            ? 'Electric • ${car.fuelCapacityLitres} kWh'
+                            : '${car.fuelType} • ${car.fuelCapacityLitres.toInt()}L Tank',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          color: isElectric ? Colors.teal.shade800 : AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        isElectric ? 'ZConnect Telemetry' : 'MoRTH VAHAN Active',
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.secondary),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Vehicle Model Title & Subtitle
+                Text(
+                  car.name,
+                  style: const TextStyle(
+                    fontFamily: 'Outfit',
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'RTO Verified • Odometer: ${car.odometerKm.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} km',
+                  style: const TextStyle(fontSize: 11, color: AppColors.secondary),
+                ),
+                const SizedBox(height: 14),
+
+                // Document Validity Checklist Box
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildChecklistRow(
+                        icon: Icons.verified_user_rounded,
+                        iconColor: AppColors.emerald,
+                        label: 'Insurance Policy:',
+                        value: car.insuranceExpiry,
+                        valueColor: AppColors.emerald,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildChecklistRow(
+                        icon: isElectric ? Icons.battery_charging_full_rounded : Icons.air_rounded,
+                        iconColor: AppColors.emerald,
+                        label: isElectric ? 'Battery Health:' : 'PUC Certificate:',
+                        value: isElectric ? '98% SoC State of Health' : car.pucExpiry,
+                        valueColor: AppColors.emerald,
+                      ),
+                      const SizedBox(height: 8),
+                      _buildChecklistRow(
+                        icon: Icons.toll_rounded,
+                        iconColor: AppColors.primary,
+                        label: 'FASTag RFID Tag:',
+                        value: car.fastTagId,
+                        isMono: true,
+                        valueColor: AppColors.onSurface,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 6),
+                        child: Divider(height: 1),
+                      ),
+                      _buildChecklistRow(
+                        icon: Icons.build_circle_rounded,
+                        iconColor: Colors.amber.shade700,
+                        label: 'Next Service Due:',
+                        value: car.serviceDueKm != null ? 'In ${car.serviceDueKm} km' : 'In 680 km (Bay A)',
+                        valueColor: Colors.amber.shade800,
+                        isBold: true,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Action Buttons Row
+                Row(
+                  children: [
+                    if (isSelected) ...[
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => HomeScreen(initialVin: car.vin)),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: const Text('View Telemetry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => ServiceScreen(initialVehicle: car)),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.onSurface,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: const Text('Book Service', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        ),
+                      ),
+                    ] else ...[
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _selectVehicle(car),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryContainer,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: const Text('Set as Active', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => FastTagScreen(initialVehicle: car)),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.onSurface,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            side: BorderSide(color: Colors.grey.shade300),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: const Text('Toll Pass', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
             ),
           ),
         ],
@@ -1696,545 +1502,61 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- Section 4: Fleet Hub Shortcuts ---
-
-  Widget _buildSection4FleetShortcuts() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildChecklistRow({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    Color valueColor = AppColors.onSurface,
+    bool isMono = false,
+    bool isBold = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'FLEET SHORTCUTS',
+        Row(
+          children: [
+            Icon(icon, size: 14, color: iconColor),
+            const SizedBox(width: 6),
+            Text(label, style: const TextStyle(fontSize: 11, color: AppColors.secondary)),
+          ],
+        ),
+        Text(
+          value,
           style: TextStyle(
             fontSize: 11,
-            letterSpacing: 1.5,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onSurfaceVariant,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            fontFamily: isMono ? 'monospace' : null,
+            color: valueColor,
           ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: _buildShortcutCard(
-                icon: Icons.local_gas_station_outlined,
-                color: AppColors.primary,
-                title: 'Fuel Logbook',
-                subtitle: 'Pump receipts & km/L',
-                onTap: () => _showDriverLogSheet(initialTab: 0),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildShortcutCard(
-                icon: Icons.build_circle_outlined,
-                color: AppColors.tertiary,
-                title: 'Service & Care',
-                subtitle: 'Multi-service booking',
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ServiceScreen(initialVehicle: _selectedVehicle),
-                    ),
-                  ).then((_) => _loadFleetData());
-                },
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildShortcutCard(
-                icon: Icons.account_balance_wallet_outlined,
-                color: AppColors.primaryContainer,
-                title: 'Toll Wallet',
-                subtitle: '\$${(_fleetSummary?.tollWalletBalance ?? 124.50).toStringAsFixed(2)} balance',
-                onTap: _showWalletRechargeSheet,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildShortcutCard(
-                icon: Icons.speed_outlined,
-                color: AppColors.secondary,
-                title: 'Odometer Entry',
-                subtitle: 'Log current mileage',
-                onTap: () => _showDriverLogSheet(initialTab: 1),
-              ),
-            ),
-          ],
         ),
       ],
     );
   }
-
-  Widget _buildShortcutCard({
-    required IconData icon,
-    required Color color,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryContainer.withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 20),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: AppColors.onSurface),
-                  ),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 10, color: AppColors.onSurfaceVariant),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
-// --- Stateful Driver Log Modal Sheet with Fuel & Odometer Tabs ---
 
-class _DriverLogModalSheet extends StatefulWidget {
-  final VehicleItem vehicle;
-  final int initialTab;
-  final Function(String) onLogSaved;
+/// Compatibility wrapper: Any existing route or navigation targeting HomeScreen
+/// will now seamlessly render the GarageScreen.
+class HomeScreen extends StatelessWidget {
+  final String? operatorName;
+  final String? operatorEmail;
+  final String? initialVin;
+  final VehicleItem? initialVehicle;
 
-  const _DriverLogModalSheet({
-    required this.vehicle,
-    this.initialTab = 0,
-    required this.onLogSaved,
+  const HomeScreen({
+    super.key,
+    this.operatorName,
+    this.operatorEmail,
+    this.initialVin,
+    this.initialVehicle,
   });
 
   @override
-  State<_DriverLogModalSheet> createState() => _DriverLogModalSheetState();
-}
-
-class _DriverLogModalSheetState extends State<_DriverLogModalSheet> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final _fuelLitresCtrl = TextEditingController(text: '35.0');
-  final _fuelCostCtrl = TextEditingController(text: '68.50');
-  String _selectedStation = 'Shell Express';
-
-  late TextEditingController _odometerCtrl;
-  int _odometerDelta = 0;
-  bool _isSubmitting = false;
-
-  final List<String> _stationPresets = [
-    'Shell Express',
-    'BP Connect',
-    'Chevron',
-    'ExxonMobil',
-    'IndianOil Hub',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTab);
-    _odometerCtrl = TextEditingController(text: (widget.vehicle.odometerKm + 45).toString());
-    _odometerDelta = 45;
-
-    _odometerCtrl.addListener(() {
-      final val = int.tryParse(_odometerCtrl.text);
-      if (val != null) {
-        setState(() {
-          _odometerDelta = val - widget.vehicle.odometerKm;
-        });
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _fuelLitresCtrl.dispose();
-    _fuelCostCtrl.dispose();
-    _odometerCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submitFuelLog() async {
-    final litres = double.tryParse(_fuelLitresCtrl.text);
-    if (litres == null || litres <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid fuel volume in Litres.')),
-      );
-      return;
-    }
-
-    final cost = double.tryParse(_fuelCostCtrl.text) ?? 0.0;
-    setState(() => _isSubmitting = true);
-
-    try {
-      final msg = await ApiService.logFuel(
-        vin: widget.vehicle.vin,
-        amountLitres: litres,
-        costTotal: cost,
-        fuelStation: _selectedStation,
-      );
-      if (mounted) {
-        Navigator.pop(context);
-        widget.onLogSaved(msg);
-      }
-    } catch (_) {
-      setState(() => _isSubmitting = false);
-    }
-  }
-
-  Future<void> _submitOdometerLog() async {
-    final newKm = int.tryParse(_odometerCtrl.text);
-    if (newKm == null || newKm < widget.vehicle.odometerKm) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('New odometer reading must be at least ${widget.vehicle.odometerKm} km.')),
-      );
-      return;
-    }
-
-    setState(() => _isSubmitting = true);
-
-    try {
-      final msg = await ApiService.logOdometer(widget.vehicle.vin, newKm);
-      if (mounted) {
-        Navigator.pop(context);
-        widget.onLogSaved(msg);
-      }
-    } catch (_) {
-      setState(() => _isSubmitting = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      padding: EdgeInsets.only(
-        top: 20,
-        left: 20,
-        right: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Drag Handle & Close
-            Center(
-              child: Container(
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Driver Logbook',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    Text(
-                      widget.vehicle.name,
-                      style: const TextStyle(fontSize: 12, color: AppColors.secondary),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, size: 20),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Tab Bar
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  gradient: AppGradients.primaryGradient,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                labelColor: Colors.white,
-                unselectedLabelColor: AppColors.secondary,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                tabs: const [
-                  Tab(icon: Icon(Icons.local_gas_station_rounded, size: 18), text: 'Fuel Fill-Up'),
-                  Tab(icon: Icon(Icons.speed_rounded, size: 18), text: 'Odometer Update'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Tab Views
-            SizedBox(
-              height: 380,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  // Tab 1: Fuel
-                  _buildFuelTab(),
-                  // Tab 2: Odometer
-                  _buildOdometerTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFuelTab() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _fuelLitresCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: 'Volume Pumped',
-                  suffixText: 'Litres',
-                  prefixIcon: const Icon(Icons.local_gas_station, color: AppColors.primary),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: _fuelCostCtrl,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  labelText: 'Total Cost',
-                  prefixText: '\$ ',
-                  prefixIcon: const Icon(Icons.attach_money, color: AppColors.primary),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        const Text(
-          'Station / Brand',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: _stationPresets.map((st) {
-            final isSel = _selectedStation == st;
-            return ChoiceChip(
-              label: Text(st),
-              selected: isSel,
-              selectedColor: AppColors.primaryContainer.withValues(alpha: 0.25),
-              labelStyle: TextStyle(
-                fontSize: 11,
-                fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
-                color: isSel ? AppColors.primary : AppColors.onSurfaceVariant,
-              ),
-              onSelected: (val) {
-                if (val) setState(() => _selectedStation = st);
-              },
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 16),
-
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.info_outline, color: AppColors.primary, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Tank Capacity: ${widget.vehicle.fuelCapacityLitres.toStringAsFixed(0)} L • Current: ${widget.vehicle.fuelLevelPercent.toStringAsFixed(0)}%',
-                  style: const TextStyle(fontSize: 11, color: AppColors.secondary),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: _isSubmitting ? null : _submitFuelLog,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-            child: _isSubmitting
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : const Text('Save Fuel Entry', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildOdometerTab() {
-    final nextService = widget.vehicle.serviceDueKm ?? 500;
-    final remainingServiceAfter = (_odometerDelta > 0) ? (nextService - _odometerDelta).clamp(0, 999999) : nextService;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Current Stored Odometer:', style: TextStyle(fontSize: 12, color: AppColors.secondary)),
-              Text(
-                '${widget.vehicle.odometerKm.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]},")} km',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.onSurface),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        TextField(
-          controller: _odometerCtrl,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: 'New Odometer (km)',
-            prefixIcon: const Icon(Icons.speed, color: AppColors.primary),
-            suffixText: 'km',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-        ),
-        const SizedBox(height: 14),
-
-        // Live Delta & Service Impact
-        Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: _odometerDelta >= 0 ? AppColors.surfaceContainerHigh : AppColors.errorContainer,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Distance Logged This Session:', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-                  Text(
-                    '+$_odometerDelta km',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: _odometerDelta >= 0 ? AppColors.primary : AppColors.error,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Next Service Interval Countdown:', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
-                  Text(
-                    '$remainingServiceAfter km',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.onSurface),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const Spacer(),
-
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: _isSubmitting ? null : _submitOdometerLog,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.tertiary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-            child: _isSubmitting
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : const Text('Update Odometer Log', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          ),
-        ),
-      ],
+    return GarageScreen(
+      initialVehicle: initialVehicle,
+      initialVin: initialVin,
     );
   }
 }

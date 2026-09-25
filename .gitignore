@@ -1,0 +1,18 @@
+# Python virtual environment & cache
+backend/.venv/
+*/.venv/
+__pycache__/
+*.pyc
+*.bak
+
+# Redundant nested clone
+motoro/
+
+# Local build artifacts
+flutter_app/build/
+.dart_tool/
+.packages
+
+# IDE
+.idea/
+.vscode/
