@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        name="viewport" />
+    <meta name="theme-color" content="#006a68" />
+    <title>MOTORO - NPCI NETC Secure Payment Gateway</title>
+
+    <!-- Tailwind CSS with Forms & Container Queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#006a68",
+                        "primary-hover": "#005351",
+                        "primary-container": "#2bb5b2",
+                        "electric": "#00e5c9",
+                        "primary-fixed": "#7bf6f2",
+                        "primary-fixed-dim": "#5bd9d6",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#004140",
+
+                        secondary: "#4d6262",
+                        "secondary-container": "#d0e7e6",
+
+                        background: "#f8fafc",
+                        "on-background": "#0f172a",
+                        surface: "#ffffff",
+                        "surface-container": "#f1f5f9",
+                        "surface-container-high": "#e2e8f0",
+                        "on-surface": "#0f172a",
+                        "on-surface-variant": "#475569",
+                        outline: "#64748b",
+                        "outline-variant": "#cbd5e1",
+
+                        error: "#ba1a1a",
+                        success: "#006c4c",
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        lg: "1.5rem",
+                        xl: "2rem",
+                        "2xl": "2.5rem",
+                    },
+                    fontFamily: {
+                        headline: ["Outfit", "Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                        label: ["Outfit", "sans-serif"],
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["Space Mono", "monospace"]
+                    },
+                    boxShadow: {
+                        'gateway': '0 25px 60px -15px rgba(0, 80, 80, 0.25)',
+                    }
+                }
+            }
+        };
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0b2222 0%, #004c4b 45%, #006a68 100%);
+            min-height: 100vh;
+        }
+
+        .gateway-card {
+            background-color: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.35);
+        }
+
+        .payment-method-tab.active {
+            background-color: #f4fafa;
+            color: #006a68;
+            font-weight: 700;
+            border-left: 4px solid #006a68;
+        }
+
+        .btn-pay-glow {
+            background: linear-gradient(135deg, #2bb5b2 0%, #006a68 100%);
+            box-shadow: 0 10px 30px -5px rgba(0, 106, 104, 0.4);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-pay-glow:hover {
+            box-shadow: 0 15px 40px -5px rgba(43, 181, 178, 0.5);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center p-3 sm:p-6 md:p-8 antialiased">
+
+    <!-- Ambient Glowing Orbs -->
+    <div class="fixed top-10 left-10 w-96 h-96 bg-primary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="fixed bottom-10 right-10 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- MAIN GATEWAY MODAL CONTAINER -->
+    <div class="w-full max-w-4xl gateway-card rounded-3xl overflow-hidden border border-white/40 my-auto relative z-10">
+
+        <!-- TOP HEADER: Merchant Branding & Session Countdown -->
+        <div
+            class="bg-[#0f2e2d] text-white px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-white shadow-md">
+                    <span class="material-symbols-outlined text-2xl">toll</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-headline font-bold text-base tracking-wider text-primary-fixed">MOTORO</span>
+                        <span
+                            class="text-[10px] bg-white/20 text-white font-mono px-2 py-0.5 rounded-full uppercase">BBPS
+                            / NETC Gateway</span>
+                    </div>
+                    <p class="text-xs text-white/70">NPCI Official FASTag Top-Up System</p>
+                </div>
+            </div>
+
+            <!-- Session Expiry Timer -->
+            <div class="flex items-center gap-3 self-start sm:self-auto">
+                <div
+                    class="bg-black/30 px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2 text-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="text-white/80">Expires in:</span>
+                    <span id="sessionTimer" class="font-mono font-bold text-primary-fixed">09:48</span>
+                </div>
+                <button onclick="cancelPayment()" class="text-white/70 hover:text-white text-xs p-1"
+                    title="Cancel & Return">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TRANSACTION RECAP STRIP -->
+        <div
+            class="bg-surface-container/60 px-6 py-3.5 border-b border-outline-variant/30 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="text-secondary">Vehicle:</span>
+                <span id="txtVehicle" class="font-mono font-bold text-on-surface">MH 12 RN 2024</span>
+                <span class="text-outline">•</span>
+                <span class="text-secondary">Tag ID:</span>
+                <span id="txtTag" class="font-mono text-secondary">NETC-3416-8901-2290</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-secondary">Payable Amount:</span>
+                <span id="txtTotalAmount"
+                    class="font-headline font-bold text-lg sm:text-xl text-primary">₹1,000.00</span>
+            </div>
+        </div>
+
+        <!-- MAIN GATEWAY BODY: SPLIT VIEW -->
+        <div class="grid grid-cols-1 md:grid-cols-12 min-h-[460px]">
+
+            <!-- LEFT NAVIGATION: PAYMENT METHODS -->
+            <div class="md:col-span-4 bg-surface-container/30 border-r border-outline-variant/30 py-3">
+                <p class="px-5 py-2 text-[10px] font-label font-bold uppercase tracking-wider text-secondary">Choose
+                    Payment Mode</p>
+
+                <nav class="space-y-1">
+                    <!-- Method 1: UPI & QR Code -->
+                    <button type="button" onclick="selectPaymentMethod('upi')" id="tab-upi"
+                        class="payment-method-tab active w-full text-left px-5 py-3.5 flex items-center gap-3 transition-colors cursor-pointer">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-lg">qr_code_2</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-on-surface">UPI / QR Code</p>
+                            <p class="text-[10px] text-secondary">GPay, PhonePe, Paytm, CRED</p>
+                        </div>
+                    </button>
+
+                    <!-- Method 2: Cards -->
+                    <button type="button" onclick="selectPaymentMethod('card')" id="tab-card"
+                        class="payment-method-tab w-full text-left px-5 py-3.5 flex items-center gap-3 transition-colors cursor-pointer">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-lg">credit_card</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-on-surface">Debit / Credit Card</p>
+                            <p class="text-[10px] text-secondary">RuPay, Visa, Mastercard</p>
+                        </div>
+                    </button>
+
+                    <!-- Method 3: Net Banking -->
+                    <button type="button" onclick="selectPaymentMethod('netbanking')" id="tab-netbanking"
+                        class="payment-method-tab w-full text-left px-5 py-3.5 flex items-center gap-3 transition-colors cursor-pointer">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-lg">account_balance</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-on-surface">Net Banking</p>
+                            <p class="text-[10px] text-secondary">All Indian Banks Supported</p>
+                        </div>
+                    </button>
+
+                    <!-- Method 4: Bharat BillPay Wallet -->
+                    <button type="button" onclick="selectPaymentMethod('bbps')" id="tab-bbps"
+                        class="payment-method-tab w-full text-left px-5 py-3.5 flex items-center gap-3 transition-colors cursor-pointer">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-lg">account_balance_wallet</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-on-surface">FastTag Wallet Direct</p>
+                            <p class="text-[10px] text-secondary">Auto-Debit & Linked Bank</p>
+                        </div>
+                    </button>
+                </nav>
+
+                <!-- Security Assurance Pill -->
+                <div class="px-5 mt-6 pt-4 border-t border-outline-variant/30">
+                    <div class="flex items-center gap-2 text-[10px] text-secondary">
+                        <span class="material-symbols-outlined text-sm text-emerald-600">verified_user</span>
+                        <span>PCI-DSS Level 1 & RBI Encrypted</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: ACTIVE METHOD FORM & ACTION -->
+            <div class="md:col-span-8 p-6 sm:p-8 flex flex-col justify-between">
+
+                <!-- 1. UPI PANEL -->
+                <div id="panel-upi" class="space-y-6">
+                    <div>
+                        <h3 class="text-sm font-bold text-on-surface">Scan UPI QR or Enter VPA</h3>
+                        <p class="text-xs text-secondary mt-0.5">Scan with any UPI app on your mobile phone to approve
+                            instantly.</p>
+                    </div>
+
+                    <div
+                        class="flex flex-col sm:flex-row items-center gap-6 p-5 bg-surface-container/40 rounded-2xl border border-outline-variant/40">
+                        <!-- Simulated Dynamic QR Code -->
+                        <div
+                            class="relative w-36 h-36 bg-white p-2.5 rounded-2xl border-2 border-primary/20 shadow-sm flex flex-col items-center justify-center shrink-0">
+                            <svg class="w-full h-full text-on-surface" viewBox="0 0 100 100" fill="currentColor">
+                                <!-- Standard QR visual pattern representation -->
+                                <rect x="5" y="5" width="28" height="28" fill="#161d1d" rx="2" />
+                                <rect x="9" y="9" width="20" height="20" fill="white" rx="1" />
+                                <rect x="13" y="13" width="12" height="12" fill="#161d1d" />
+
+                                <rect x="67" y="5" width="28" height="28" fill="#161d1d" rx="2" />
+                                <rect x="71" y="9" width="20" height="20" fill="white" rx="1" />
+                                <rect x="75" y="13" width="12" height="12" fill="#161d1d" />
+
+                                <rect x="5" y="67" width="28" height="28" fill="#161d1d" rx="2" />
+                                <rect x="9" y="71" width="20" height="20" fill="white" rx="1" />
+                                <rect x="13" y="75" width="12" height="12" fill="#161d1d" />
+
+                                <!-- Center Toll Icon -->
+                                <circle cx="50" cy="50" r="10" fill="#006a68" />
+                                <rect x="42" y="10" width="8" height="8" fill="#161d1d" />
+                                <rect x="52" y="15" width="6" height="12" fill="#161d1d" />
+                                <rect x="42" y="70" width="8" height="8" fill="#161d1d" />
+                                <rect x="52" y="75" width="14" height="6" fill="#161d1d" />
+                                <rect x="70" y="42" width="10" height="10" fill="#161d1d" />
+                                <rect x="85" y="50" width="6" height="15" fill="#161d1d" />
+                                <rect x="10" y="45" width="15" height="6" fill="#161d1d" />
+                                <rect x="28" y="50" width="8" height="8" fill="#161d1d" />
+                            </svg>
+                            <span class="text-[9px] font-mono font-bold text-primary mt-1">BHIM UPI</span>
+                        </div>
+
+                        <!-- Right of QR: App Logos & UPI ID -->
+                        <div class="space-y-3 w-full">
+                            <p class="text-xs font-semibold text-on-surface">Supported UPI Apps:</p>
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="px-2.5 py-1 rounded-lg bg-white border border-outline-variant/40 text-[11px] font-bold text-on-surface shadow-xs">GPay</span>
+                                <span
+                                    class="px-2.5 py-1 rounded-lg bg-white border border-outline-variant/40 text-[11px] font-bold text-on-surface shadow-xs">PhonePe</span>
+                                <span
+                                    class="px-2.5 py-1 rounded-lg bg-white border border-outline-variant/40 text-[11px] font-bold text-on-surface shadow-xs">Paytm</span>
+                                <span
+                                    class="px-2.5 py-1 rounded-lg bg-white border border-outline-variant/40 text-[11px] font-bold text-on-surface shadow-xs">CRED</span>
+                            </div>
+
+                            <div class="pt-2">
+                                <label
+                                    class="block text-[11px] font-bold text-secondary uppercase tracking-wider mb-1">Or
+                                    Enter Virtual Payment Address (VPA)</label>
+                                <div class="relative">
+                                    <input type="text" id="inputUpiId" placeholder="mobile@okaxis / username@upi"
+                                        value="driver.fleet@okhdfcbank"
+                                        class="w-full text-xs px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                    <button type="button" onclick="verifyUpiVpa()"
+                                        class="absolute right-2 top-2 text-[11px] font-bold text-primary hover:underline">
+                                        Verify
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. CARD PANEL (Hidden by default) -->
+                <div id="panel-card" class="hidden space-y-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-on-surface">Enter Debit or Credit Card</h3>
+                        <p class="text-xs text-secondary mt-0.5">RuPay, Visa, Mastercard, and Corporate fleet cards
+                            accepted.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-secondary uppercase mb-1">Card Number</label>
+                            <div class="relative">
+                                <input type="text" placeholder="4532 •••• •••• 8821" value="5241 8900 1234 5678"
+                                    maxlength="19"
+                                    class="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/50 focus:border-primary outline-none">
+                                <span
+                                    class="material-symbols-outlined text-lg text-secondary absolute right-3 top-2.5">credit_card</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-secondary uppercase mb-1">Valid
+                                    Thru</label>
+                                <input type="text" placeholder="MM/YY" value="08/29" maxlength="5"
+                                    class="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/50 focus:border-primary outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-secondary uppercase mb-1">CVV /
+                                    CVC</label>
+                                <input type="password" placeholder="•••" value="782" maxlength="3"
+                                    class="w-full text-xs font-mono px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/50 focus:border-primary outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-bold text-secondary uppercase mb-1">Name on
+                                Card</label>
+                            <input type="text" placeholder="Driver / Company Name" value="VIKRAM SHARMA"
+                                class="w-full text-xs uppercase px-3.5 py-2.5 rounded-xl bg-white border border-outline-variant/50 focus:border-primary outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. NET BANKING PANEL (Hidden by default) -->
+                <div id="panel-netbanking" class="hidden space-y-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-on-surface">Select Net Banking Provider</h3>
+                        <p class="text-xs text-secondary mt-0.5">Instant gateway clearance with pre-approved banking
+                            channels.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                        <label
+                            class="p-3 rounded-xl border border-primary bg-primary/5 flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bankRadio" checked class="text-primary focus:ring-0">
+                            <span class="text-xs font-bold text-on-surface">HDFC Bank</span>
+                        </label>
+                        <label
+                            class="p-3 rounded-xl border border-outline-variant/40 hover:border-primary flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bankRadio" class="text-primary focus:ring-0">
+                            <span class="text-xs font-bold text-on-surface">ICICI Bank</span>
+                        </label>
+                        <label
+                            class="p-3 rounded-xl border border-outline-variant/40 hover:border-primary flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bankRadio" class="text-primary focus:ring-0">
+                            <span class="text-xs font-bold text-on-surface">State Bank (SBI)</span>
+                        </label>
+                        <label
+                            class="p-3 rounded-xl border border-outline-variant/40 hover:border-primary flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bankRadio" class="text-primary focus:ring-0">
+                            <span class="text-xs font-bold text-on-surface">Axis Bank</span>
+                        </label>
+                        <label
+                            class="p-3 rounded-xl border border-outline-variant/40 hover:border-primary flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bankRadio" class="text-primary focus:ring-0">
+                            <span class="text-xs font-bold text-on-surface">Kotak Bank</span>
+                        </label>
+                        <label
+                            class="p-3 rounded-xl border border-outline-variant/40 hover:border-primary flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="bankRadio" class="text-primary focus:ring-0">
+                            <span class="text-xs font-bold text-on-surface">Other Banks</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 4. BBPS WALLET DIRECT PANEL (Hidden by default) -->
+                <div id="panel-bbps" class="hidden space-y-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-on-surface">Bharat BillPay (BBPS) Auto-Debit</h3>
+                        <p class="text-xs text-secondary mt-0.5">Top-up directly using linked fleet treasury or NETC
+                            bank account.</p>
+                    </div>
+
+                    <div
+                        class="p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/40 space-y-2 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-secondary">Linked Fleet Bank:</span>
+                            <span class="font-bold text-on-surface">ICICI Corporate Current A/c</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-secondary">Account Number:</span>
+                            <span class="font-mono font-bold text-on-surface">•••• •••• 4409</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-secondary">Approval Protocol:</span>
+                            <span class="font-semibold text-emerald-700">Pre-Approved Fleet Credit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM ACTION STRIP -->
+                <div class="mt-8 pt-5 border-t border-outline-variant/30 space-y-3">
+                    <button type="button" id="btnPayNow" onclick="processPayment()"
+                        class="btn-pay-glow w-full text-white font-bold text-sm sm:text-base py-3.5 rounded-2xl flex items-center justify-center gap-2 cursor-pointer shadow-lg">
+                        <span class="material-symbols-outlined text-xl">verified_user</span>
+                        <span id="btnPayText">Pay ₹1,000.00 & Credit FastTag</span>
+                    </button>
+
+                    <!-- Quick simulation action buttons for testing -->
+                    <div class="flex items-center justify-between text-xs text-secondary pt-1">
+                        <button type="button" onclick="cancelPayment()"
+                            class="hover:text-error hover:underline flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">arrow_back</span>
+                            <span>Cancel and Return</span>
+                        </button>
+
+                        <button type="button" onclick="instantSimulateSuccess()"
+                            class="text-primary font-semibold hover:underline flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">bolt</span>
+                            <span>Quick Demo Success (1-Click)</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PROCESSING OVERLAY SCREEN (Shown when user clicks Pay) -->
+    <div id="processingOverlay"
+        class="fixed inset-0 z-50 bg-[#0f2e2d]/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-white text-center opacity-0 pointer-events-none transition-all duration-300">
+        <div class="w-20 h-20 relative flex items-center justify-center mb-6">
+            <div
+                class="w-20 h-20 rounded-full border-4 border-primary-container/30 border-t-primary-container animate-spin">
+            </div>
+            <span class="material-symbols-outlined text-3xl text-primary-fixed absolute">toll</span>
+        </div>
+        <h2 class="font-headline font-bold text-xl sm:text-2xl text-white">Processing NETC Payment...</h2>
+        <p id="processingStepText" class="text-xs sm:text-sm text-white/80 mt-2 font-mono">
+            Communicating with NPCI National Electronic Toll Collection switch...
+        </p>
+
+        <div class="w-64 bg-white/20 h-1.5 rounded-full mt-6 overflow-hidden">
+            <div id="processingProgressBar" class="bg-primary-fixed h-full w-1/4 transition-all duration-700"></div>
+        </div>
+        <p class="text-[11px] text-white/60 mt-3">Do not close this window or press back.</p>
+    </div>
+
+    <script>
+        // Read Query Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const amount = parseFloat(urlParams.get('amount')) || 1000;
+        const tag = urlParams.get('tag') || 'NETC-3416-8901-2290';
+        const vehicle = urlParams.get('vehicle') || 'MH 12 RN 2024';
+        const vin = urlParams.get('v') || 'IND-MH12-XUV700';
+        const type = urlParams.get('type') || 'Instant Wallet Balance Credit';
+
+        document.getElementById('txtVehicle').textContent = vehicle;
+        document.getElementById('txtTag').textContent = tag;
+        document.getElementById('txtTotalAmount').textContent = `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        document.getElementById('btnPayText').textContent = `Pay ₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })} & Credit FastTag`;
+
+        // Countdown Session Timer (10:00)
+        let timeLeft = 598; // seconds
+        const timerEl = document.getElementById('sessionTimer');
+        const timerInterval = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert('Session expired. Redirecting back to FastTag Pass manager.');
+                cancelPayment();
+                return;
+            }
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }, 1000);
+
+        // Payment Method Switcher
+        function selectPaymentMethod(method) {
+            const tabs = ['upi', 'card', 'netbanking', 'bbps'];
+            tabs.forEach(t => {
+                const tabEl = document.getElementById(`tab-${t}`);
+                const panelEl = document.getElementById(`panel-${t}`);
+                if (t === method) {
+                    tabEl.classList.add('active');
+                    panelEl.classList.remove('hidden');
+                } else {
+                    tabEl.classList.remove('active');
+                    panelEl.classList.add('hidden');
+                }
+            });
+        }
+
+        function verifyUpiVpa() {
+            const upi = document.getElementById('inputUpiId').value;
+            if (!upi.includes('@')) {
+                alert('Please enter a valid UPI VPA (e.g., driver@upi)');
+                return;
+            }
+            alert(`Verified: ${upi} (State Bank of India / NPCI Verified Account)`);
+        }
+
+        // Realistic Payment Processing Flow
+        function processPayment() {
+            const overlay = document.getElementById('processingOverlay');
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+
+            const stepText = document.getElementById('processingStepText');
+            const progress = document.getElementById('processingProgressBar');
+
+            setTimeout(() => {
+                progress.style.width = '55%';
+                stepText.textContent = 'NPCI Switch Handshake Verified. Authorizing debit...';
+            }, 800);
+
+            setTimeout(() => {
+                progress.style.width = '85%';
+                stepText.textContent = 'Updating NETC FastTag RFID balance for ' + vehicle + '...';
+            }, 1800);
+
+            setTimeout(() => {
+                progress.style.width = '100%';
+                stepText.textContent = 'Payment Approved! Redirecting to MOTORO...';
+
+                // Generate a realistic transaction reference
+                const txnid = 'NETC' + Math.floor(1000000 + Math.random() * 9000000);
+
+                setTimeout(() => {
+                    window.location.href = `fasttag.html?status=success&amt=${encodeURIComponent(amount)}&txnid=${encodeURIComponent(txnid)}&v=${encodeURIComponent(vin)}`;
+                }, 700);
+            }, 2800);
+        }
+
+        function instantSimulateSuccess() {
+            const txnid = 'NETC' + Math.floor(1000000 + Math.random() * 9000000);
+            window.location.href = `fasttag.html?status=success&amt=${encodeURIComponent(amount)}&txnid=${encodeURIComponent(txnid)}&v=${encodeURIComponent(vin)}`;
+        }
+
+        function cancelPayment() {
+            window.location.href = `fasttag.html?v=${encodeURIComponent(vin)}`;
+        }
+    </script>
+</body>
+
+</html>

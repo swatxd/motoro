@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+    <meta name="theme-color" content="#006a68"/>
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <title>MOTORO - Indian Authorized Service & Maintenance Bays</title>
+    <!-- Tailwind CSS with Forms & Container Queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#006a68",
+                        "primary-hover": "#005351",
+                        "primary-container": "#2bb5b2",
+                        "primary-fixed": "#7bf6f2",
+                        "primary-fixed-dim": "#5bd9d6",
+                        "accent-electric": "#00e5c9",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#003837",
+                        "on-primary-fixed": "#00201f",
+
+                        secondary: "#334155",
+                        "secondary-container": "#e2e8f0",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#0f172a",
+
+                        tertiary: "#0284c7",
+                        "tertiary-container": "#e0f2fe",
+                        "on-tertiary": "#ffffff",
+
+                        background: "#f8fafc",
+                        "on-background": "#0f172a",
+                        surface: "#ffffff",
+                        "surface-glass": "rgba(255, 255, 255, 0.88)",
+                        "surface-container": "#f1f5f9",
+                        "surface-container-high": "#e2e8f0",
+                        "on-surface": "#0f172a",
+                        "on-surface-variant": "#475569",
+                        outline: "#94a3b8",
+                        "outline-variant": "#cbd5e1",
+
+                        error: "#dc2626",
+                        "error-container": "#fee2e2",
+                        "on-error": "#ffffff",
+
+                        warning: "#d97706",
+                        "warning-container": "#fef3c7",
+                        "on-warning": "#ffffff",
+
+                        success: "#059669",
+                        "success-container": "#d1fae5",
+                        "on-success": "#ffffff"
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                        '2xl': '1.25rem',
+                        '3xl': '1.75rem',
+                        '4xl': '2.25rem',
+                        'full': '9999px'
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+                        headline: ["Outfit", "Inter", "sans-serif"],
+                        display: ["Outfit", "Inter", "sans-serif"],
+                        body: ["Inter", "-apple-system", "sans-serif"],
+                        mono: ["JetBrains Mono", "SF Mono", "Consolas", "monospace"],
+                    },
+                    boxShadow: {
+                        'subtle': '0 2px 10px rgba(0, 106, 104, 0.04)',
+                        'card': '0 12px 32px -8px rgba(0, 106, 104, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03)',
+                        'card-hover': '0 24px 48px -12px rgba(0, 106, 104, 0.16), 0 8px 16px -4px rgba(15, 23, 42, 0.05)',
+                        'glow': '0 0 25px rgba(0, 229, 201, 0.35)',
+                        'primary-glow': '0 12px 28px -6px rgba(0, 106, 104, 0.45)',
+                        'modal': '0 32px 72px -16px rgba(15, 23, 42, 0.28)',
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #0f172a;
+        }
+
+        h1, h2, h3, h4, .font-headline, .font-display {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            letter-spacing: -0.025em;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 30px -5px rgba(0, 106, 104, 0.06), 0 2px 6px rgba(15, 23, 42, 0.02);
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(43, 181, 178, 0.4);
+            box-shadow: 0 20px 42px -10px rgba(0, 106, 104, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .glass-card-static {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 30px -5px rgba(0, 106, 104, 0.06);
+        }
+
+        .nav-dock-pill {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 12px 36px -8px rgba(0, 106, 104, 0.12), 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .btn-glow, .btn-primary-glow {
+            background: linear-gradient(135deg, #007a78 0%, #005351 100%);
+            box-shadow: 0 10px 24px -6px rgba(0, 106, 104, 0.45);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-glow:hover, .btn-primary-glow:hover {
+            box-shadow: 0 16px 32px -6px rgba(0, 106, 104, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .modal-backdrop {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.25); }
+        }
+
+        .pulse-dot {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        .cal-day-cell {
+            transition: all 0.15s ease;
+        }
+        .cal-day-cell:hover:not(.disabled) {
+            background-color: rgba(43, 181, 178, 0.15);
+            color: #006a68;
+        }
+        .cal-day-cell.selected {
+            background: linear-gradient(135deg, #007a78, #005351);
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .ambient-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 12% 18%, rgba(0, 229, 201, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 88% 12%, rgba(0, 106, 104, 0.08) 0%, transparent 45%),
+                radial-gradient(circle at 50% 85%, rgba(14, 165, 233, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .mobile-nav-btn.active {
+            color: #006a68;
+            font-weight: 700;
+        }
+        .mobile-nav-btn.active .mobile-icon-box {
+            background: rgba(0, 106, 104, 0.12);
+            color: #006a68;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-on-surface antialiased relative pb-28 md:pb-16 overflow-x-hidden">
+
+    <div class="ambient-mesh"></div>
+
+    <!-- MASTER TOP APP BAR -->
+    <!-- MASTER TOP APP BAR -->
+    <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-2xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-2.5 transition-all">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-white shadow-md shadow-primary/25 group-hover:scale-105 transition-transform">
+                        <span class="material-symbols-outlined text-2xl">toll</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-headline font-extrabold text-xl tracking-tight text-slate-900">MOTORO</span>
+                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full tracking-wide whitespace-nowrap">
+                            <span>BHARAT</span>
+                            <svg class="w-3.5 h-2.5 rounded-xs overflow-hidden shadow-xs shrink-0 inline-block" viewBox="0 0 24 16">
+                                <rect width="24" height="5.33" fill="#FF9933"/>
+                                <rect y="5.33" width="24" height="5.33" fill="#FFFFFF"/>
+                                <rect y="10.67" width="24" height="5.33" fill="#138808"/>
+                                <circle cx="12" cy="8" r="2" stroke="#000080" stroke-width="0.7" fill="none"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Master Navigation Tabs -->
+            <nav class="hidden lg:flex items-center p-1 bg-slate-100/90 rounded-full border border-slate-200/90 shadow-inner">
+                <a href="index.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">directions_car</span>
+                    <span>Garage Fleet</span>
+                </a>
+                <a href="service.html" class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-primary to-primary-hover shadow-sm">
+                    <span class="material-symbols-outlined text-base">build_circle</span>
+                    <span>Services</span>
+                </a>
+                <a href="fuel_odo.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">local_gas_station</span>
+                    <span>Fuel & Odo</span>
+                </a>
+                <a href="fasttag.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">toll</span>
+                    <span>FastTag</span>
+                </a>
+                <a href="qr_contact.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">qr_code_scanner</span>
+                    <span>QR Tag</span>
+                </a>
+            </nav>
+
+            <!-- Right Controls: Vehicle Switcher & User Profile -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Vehicle Selector Dropdown -->
+                <div class="relative">
+                    <button id="vehicleDropdownBtn" onclick="toggleVehicleDropdown()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-semibold text-slate-900 shadow-xs transition-all cursor-pointer">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+                        <span id="selectedVehicleLabel" class="font-mono font-bold tracking-wide">MH 12 RN 2024</span>
+                        <span class="material-symbols-outlined text-sm text-slate-500">expand_more</span>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div id="vehicleDropdownMenu" class="hidden absolute right-0 mt-2 w-72 rounded-2xl bg-white p-2 shadow-2xl z-50 border border-slate-200">
+                        <p class="text-[10px] font-headline uppercase tracking-wider text-slate-400 font-bold px-3 py-1.5">Enrolled Fleet Tags</p>
+                        <div class="space-y-1">
+                            <button onclick="changeVehicle('IND-MH12-XUV700')" class="w-full text-left p-2 rounded-xl hover:bg-teal-50 flex items-center justify-between transition-colors">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900">Mahindra XUV700</p>
+                                    <p class="text-[10px] text-slate-500 font-mono">MH 12 RN 2024 • ICICI FASTag</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
+                            </button>
+                            <button onclick="changeVehicle('IND-KA01-NEXON-EV')" class="w-full text-left p-2 rounded-xl hover:bg-teal-50 flex items-center justify-between transition-colors">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900">Tata Nexon EV</p>
+                                    <p class="text-[10px] text-slate-500 font-mono">KA 01 EQ 4050 • HDFC FASTag</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
+                            </button>
+                            <button onclick="changeVehicle('IND-DL08-THAR-4X4')" class="w-full text-left p-2 rounded-xl hover:bg-teal-50 flex items-center justify-between transition-colors">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900">Mahindra Thar 4x4</p>
+                                    <p class="text-[10px] text-slate-500 font-mono">DL 08 CA 7788 • SBI FASTag</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Low Bal</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Button -->
+                <button onclick="openNotificationsModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 flex items-center justify-center text-slate-700 transition-colors relative cursor-pointer" title="Notifications">
+                    <span class="material-symbols-outlined text-xl">notifications</span>
+                    <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white"></span>
+                </button>
+
+                <!-- Profile & Logout -->
+                <div class="flex items-center gap-2 border-l border-slate-200 pl-2 sm:pl-3">
+                    <a href="account.html" class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center text-xs font-bold font-headline shadow-sm hover:opacity-90 hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer" title="Driver Account & Profile">
+                        VS
+                    </a>
+                    <a href="login.html" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-500 flex items-center justify-center transition-colors" title="Logout">
+                        <span class="material-symbols-outlined text-base">logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Secondary Tablet Nav Bar -->
+    <div class="block lg:hidden max-w-2xl mx-auto px-4 mt-3">
+        <div class="nav-dock-pill rounded-full p-1 flex items-center justify-between overflow-x-auto">
+            <a href="index.html" class="flex-1 min-w-[70px] flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-full text-xs font-semibold text-slate-600 hover:text-primary">
+                <span class="material-symbols-outlined text-base">directions_car</span>
+                <span>Garage</span>
+            </a>
+            <a href="service.html" class="flex-1 min-w-[70px] flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-full text-xs font-bold text-white bg-primary shadow-xs">
+                <span class="material-symbols-outlined text-base">build_circle</span>
+                <span>Services</span>
+            </a>
+            <a href="fuel_odo.html" class="flex-1 min-w-[70px] flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-full text-xs font-semibold text-slate-600 hover:text-primary">
+                <span class="material-symbols-outlined text-base">local_gas_station</span>
+                <span>Fuel</span>
+            </a>
+            <a href="fasttag.html" class="flex-1 min-w-[70px] flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-full text-xs font-semibold text-slate-600 hover:text-primary">
+                <span class="material-symbols-outlined text-base">toll</span>
+                <span>FastTag</span>
+            </a>
+            <a href="qr_contact.html" class="flex-1 min-w-[70px] flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-full text-xs font-semibold text-slate-600 hover:text-primary">
+                <span class="material-symbols-outlined text-base">qr_code_scanner</span>
+                <span>QR Tag</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-5 md:px-8 mt-6 space-y-7">
+        
+        <!-- Live Telemetry Status Banner -->
+        <div class="glass-card-static rounded-3xl p-5 md:p-6 relative overflow-hidden transition-all duration-300 hover:shadow-glass-hover">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center text-white shadow-md shadow-primary/20 shrink-0">
+                        <span class="material-symbols-outlined text-2xl">health_and_safety</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base md:text-lg font-bold text-on-surface font-headline">Vehicle Health Diagnostics</h2>
+                            <span class="inline-flex items-center gap-1.5 text-xs font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span> 96% Optimal
+                            </span>
+                        </div>
+                        <p class="text-xs text-on-surface-variant mt-0.5">All electronic sensors online • Next inspection at 15,000 km</p>
+                    </div>
+                </div>
+
+                <!-- Quick Metric Counters -->
+                <div class="grid grid-cols-3 gap-6 md:gap-8 border-t lg:border-t-0 lg:border-l border-outline-variant/30 pt-4 lg:pt-0 lg:pl-8 shrink-0">
+                    <div>
+                        <p class="text-[11px] font-headline uppercase tracking-wider text-on-surface-variant font-semibold">Odometer</p>
+                        <p id="statOdometer" class="text-base md:text-lg font-headline font-bold text-on-surface tabular-nums mt-0.5">12,450 <span class="text-xs font-normal text-outline">km</span></p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-headline uppercase tracking-wider text-on-surface-variant font-semibold">Fuel Level</p>
+                        <p class="text-base md:text-lg font-headline font-bold text-primary tabular-nums mt-0.5">75% <span class="text-xs font-normal text-outline">(48 L)</span></p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-headline uppercase tracking-wider text-on-surface-variant font-semibold">Service Due</p>
+                        <p class="text-base md:text-lg font-headline font-bold text-error tabular-nums mt-0.5">In 480 km</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header & Primary Action Hero -->
+        <section class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-1">
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-on-surface font-headline tracking-tight">Service & Maintenance</h1>
+                <p class="text-xs md:text-sm text-on-surface-variant mt-0.5">Book certified service centers with genuine OEM parts warranty.</p>
+            </div>
+            
+            <!-- Book Service Hero Button -->
+            <button id="btnOpenBookingModal" class="btn-primary-glow text-on-primary font-headline font-semibold text-sm px-5 py-3 rounded-2xl flex items-center gap-2 w-full sm:w-auto justify-center shadow-md group cursor-pointer active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-[20px] transition-transform group-hover:rotate-12">calendar_month</span>
+                <span>Book Service</span>
+                <span class="material-symbols-outlined text-[18px] opacity-75 group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+        </section>
+
+        <!-- Interactive Geolocation Map Section -->
+        <div class="glass-card-static rounded-3xl p-5 md:p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-xl">near_me</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-headline font-bold text-base text-on-surface">Authorized Service Centers</h3>
+                            <span id="brandFilterBadge" class="text-[10px] font-headline font-bold bg-primary text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                                Mahindra Authorized
+                            </span>
+                        </div>
+                        <p class="text-xs text-on-surface-variant mt-0.5">
+                            Nearest authorized centers in <span class="font-semibold text-on-surface" id="locationCityLabel">Kozhikode, Kerala</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Geolocation Status & Trigger -->
+                <div class="flex items-center gap-2 self-start sm:self-auto">
+                    <button type="button" onclick="detectUserLocation(true)" id="btnGpsSync" class="text-xs font-medium bg-white/90 hover:bg-white border border-outline-variant/40 px-3.5 py-1.5 rounded-full text-on-surface flex items-center gap-2 transition-all shadow-xs cursor-pointer hover:border-primary">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                        <span id="gpsButtonLabel" class="font-medium">📍 Kozhikode (GPS Active)</span>
+                        <span class="material-symbols-outlined text-sm text-secondary" id="gpsSyncIcon">refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Leaflet Map Visual Canvas -->
+            <div class="relative rounded-2xl overflow-hidden border border-outline-variant/30 shadow-inner group">
+                <div id="serviceMap" class="w-full h-72 sm:h-80 z-10"></div>
+                
+                <!-- Floating Brand Filter Pills Overlay on Map -->
+                <div class="absolute top-3 right-3 z-20 flex gap-1 bg-white/95 backdrop-blur-md p-1 rounded-xl border border-outline-variant/40 shadow-md">
+                    <button type="button" onclick="filterCentersByBrand('ALL')" id="filterBtnALL" class="brand-filter-btn px-3 py-1 rounded-lg text-xs font-semibold text-secondary transition-all">All</button>
+                    <button type="button" onclick="filterCentersByBrand('Mahindra')" id="filterBtnMahindra" class="brand-filter-btn active px-3 py-1 rounded-lg text-xs font-bold text-white bg-primary transition-all">Mahindra</button>
+                    <button type="button" onclick="filterCentersByBrand('Tata')" id="filterBtnTata" class="brand-filter-btn px-3 py-1 rounded-lg text-xs font-semibold text-secondary transition-all">Tata EV</button>
+                </div>
+
+                <!-- Bottom GPS Details Strip Overlay on Map -->
+                <div class="absolute bottom-3 left-3 right-3 sm:right-auto z-20 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-full text-[11px] text-white flex items-center gap-1.5 shadow-lg">
+                    <span class="material-symbols-outlined text-xs text-primary-fixed">my_location</span>
+                    <span id="userCoordinatesText">11.2588° N, 75.7804° E • Kozhikode</span>
+                </div>
+            </div>
+
+            <!-- Service Centers Cards Grid (Dynamically Populated) -->
+            <div id="serviceCentersGrid" class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                <!-- Center cards dynamically rendered -->
+            </div>
+        </div>
+
+        <!-- Two Column Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+            
+            <!-- Left Column: Upcoming Service Items (5 cols) -->
+            <div class="lg:col-span-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-headline font-bold text-base text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[20px]">build</span>
+                        Recommended Services
+                    </h3>
+                    <span class="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">3 Due</span>
+                </div>
+
+                <!-- Card 1: Brake Pad inspection -->
+                <div class="service-action-card glass-panel rounded-2xl p-4 relative overflow-hidden group">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center text-error shrink-0">
+                                <span class="material-symbols-outlined text-xl">disc_full</span>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-sm text-on-surface font-headline">Brake Pads & Rotors</h4>
+                                    <span class="text-[10px] font-semibold text-error bg-error/10 px-2 py-0.5 rounded-md">Due</span>
+                                </div>
+                                <p class="text-xs text-on-surface-variant mt-0.5">Thickness check & sensor threshold renewal</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-outline-variant/20 flex items-center justify-between">
+                        <span class="text-xs font-bold text-on-surface font-headline tabular-nums">$140.00 <span class="text-[11px] text-outline font-normal">· ~60m</span></span>
+                        <button onclick="openBookingWithPreset('Brake Pad & Rotor Inspection')" class="text-xs font-semibold text-primary hover:text-primary-container flex items-center gap-1 cursor-pointer transition-colors">
+                            <span>Book</span>
+                            <span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 2: Engine Oil -->
+                <div class="service-action-card glass-panel rounded-2xl p-4 relative overflow-hidden group">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                                <span class="material-symbols-outlined text-xl">oil_barrel</span>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-bold text-sm text-on-surface font-headline">Synthetic Oil & Filter</h4>
+                                    <span class="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md">Scheduled</span>
+                                </div>
+                                <p class="text-xs text-on-surface-variant mt-0.5">5W-40 synthetic oil with OEM filter</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-outline-variant/20 flex items-center justify-between">
+                        <span class="text-xs font-bold text-on-surface font-headline tabular-nums">$85.00 <span class="text-[11px] text-outline font-normal">· ~45m</span></span>
+                        <button onclick="openBookingWithPreset('Engine Oil & Filter Service')" class="text-xs font-semibold text-primary hover:text-primary-container flex items-center gap-1 cursor-pointer transition-colors">
+                            <span>Book</span>
+                            <span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Card 3: Alignment -->
+                <div class="service-action-card glass-panel rounded-2xl p-4 relative overflow-hidden group">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-secondary-container/60 flex items-center justify-center text-secondary shrink-0">
+                                <span class="material-symbols-outlined text-xl">tire_repair</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-on-surface font-headline">Wheel Alignment</h4>
+                                <p class="text-xs text-on-surface-variant mt-0.5">Computerized 4-wheel dynamic balancing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2.5 border-t border-outline-variant/20 flex items-center justify-between">
+                        <span class="text-xs font-bold text-on-surface font-headline tabular-nums">$65.00 <span class="text-[11px] text-outline font-normal">· ~30m</span></span>
+                        <button onclick="openBookingWithPreset('Wheel Alignment & Balancing')" class="text-xs font-semibold text-primary hover:text-primary-container flex items-center gap-1 cursor-pointer transition-colors">
+                            <span>Book</span>
+                            <span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Service History Timeline (7 cols) -->
+            <div class="lg:col-span-7 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-headline font-bold text-base text-on-surface flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[20px]">history</span>
+                        Service Records
+                    </h3>
+                </div>
+
+                <div class="relative pl-6 border-l-2 border-primary/20 space-y-4" id="timelineContainer">
+                    <!-- Item 1 -->
+                    <div class="timeline-item relative group">
+                        <div class="absolute -left-[31px] top-3 w-3.5 h-3.5 rounded-full bg-white border-3 border-emerald-500 shadow-xs"></div>
+                        <div class="service-action-card bg-white/80 hover:bg-white p-4 rounded-2xl border border-white shadow-xs">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-headline text-xs font-bold text-primary">OCT 15, 2025</span>
+                                    <span class="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">Certified Hub</span>
+                                </div>
+                                <span class="text-xs font-headline text-on-surface-variant tabular-nums">10,240 km</span>
+                            </div>
+                            <h4 class="font-headline font-bold text-sm text-on-surface">10,000 km Scheduled Factory Inspection</h4>
+                            <div class="mt-2 pt-2 border-t border-outline-variant/15 flex items-center justify-between text-xs text-on-surface-variant">
+                                <span class="flex items-center gap-1 text-emerald-700 font-medium">
+                                    <span class="material-symbols-outlined text-[15px]">check_circle</span>
+                                    52/52 Safety Points Passed
+                                </span>
+                                <span class="font-mono text-primary font-medium text-[11px]">SRV-88219</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="timeline-item relative group">
+                        <div class="absolute -left-[31px] top-3 w-3.5 h-3.5 rounded-full bg-white border-3 border-primary shadow-xs"></div>
+                        <div class="service-action-card bg-white/80 hover:bg-white p-4 rounded-2xl border border-white shadow-xs">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-headline text-xs font-bold text-primary">JUL 22, 2025</span>
+                                    <span class="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">Alignment</span>
+                                </div>
+                                <span class="text-xs font-headline text-on-surface-variant tabular-nums">7,890 km</span>
+                            </div>
+                            <h4 class="font-headline font-bold text-sm text-on-surface">Wheel Alignment & Dynamic Balancing</h4>
+                            <div class="mt-2 pt-2 border-t border-outline-variant/15 flex items-center justify-between text-xs text-on-surface-variant">
+                                <span class="font-medium text-on-surface-variant">MOTORO Downtown Hub</span>
+                                <span class="font-mono text-primary font-medium text-[11px]">SRV-77142</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="timeline-item relative group">
+                        <div class="absolute -left-[31px] top-3 w-3.5 h-3.5 rounded-full bg-white border-3 border-secondary shadow-xs"></div>
+                        <div class="service-action-card bg-white/80 hover:bg-white p-4 rounded-2xl border border-white shadow-xs">
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-headline text-xs font-bold text-secondary">MAR 10, 2025</span>
+                                    <span class="text-[10px] font-semibold bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">Delivery</span>
+                                </div>
+                                <span class="text-xs font-headline text-on-surface-variant tabular-nums">25 km</span>
+                            </div>
+                            <h4 class="font-headline font-bold text-sm text-on-surface">Factory Handover & Delivery Inspection</h4>
+                            <div class="mt-2 pt-2 border-t border-outline-variant/15 flex items-center justify-between text-xs text-on-surface-variant">
+                                <span class="font-medium text-emerald-700">Pre-Delivery Inspection Certified</span>
+                                <span class="font-mono text-secondary font-medium text-[11px]">SRV-60012</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Multi-Service Scheduling Modal -->
+    <div id="bookingModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div id="bookingModalCard" class="bg-white/95 backdrop-blur-2xl border border-white rounded-3xl max-w-xl w-full shadow-modal overflow-hidden transform scale-95 transition-all duration-300 max-h-[92vh] flex flex-col">
+            
+            <!-- Modal Header -->
+            <div class="p-5 pb-4 border-b border-outline-variant/30 flex items-center justify-between bg-gradient-to-r from-surface to-primary/5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container text-white flex items-center justify-center shadow-md shadow-primary/25">
+                        <span class="material-symbols-outlined text-2xl">calendar_month</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base md:text-lg font-bold text-on-surface font-headline">Book Service Appointment</h3>
+                        <p class="text-xs text-on-surface-variant">Select services, date and preferred center</p>
+                    </div>
+                </div>
+                
+                <button id="btnCloseModal" class="w-8 h-8 rounded-full bg-surface-container hover:bg-surface-variant text-on-surface-variant flex items-center justify-center transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined text-base">close</span>
+                </button>
+            </div>
+
+            <!-- Modal Body Scrollable -->
+            <div class="p-5 space-y-4 overflow-y-auto flex-1">
+                
+                <!-- Vehicle Confirmation Badge -->
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-surface-container/60 border border-white">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-primary text-xl">directions_car</span>
+                        <div>
+                            <p class="text-xs font-bold text-on-surface font-headline" id="modalVehicleName">Mahindra XUV700 AX7 L</p>
+                            <p class="text-[10px] text-on-surface-variant font-mono" id="modalVehicleVin">MH 12 RN 2024</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        Care+ Covered
+                    </span>
+                </div>
+
+                <!-- 1. Multi-Service Checklist -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold uppercase tracking-wider text-on-surface-variant font-headline">
+                            Select Services
+                        </label>
+                        <span id="selectedServicesCount" class="text-xs font-bold text-primary font-headline">2 Selected • ~1h 45m</span>
+                    </div>
+
+                    <div class="space-y-2" id="servicesChecklist">
+                        <!-- Item 1 -->
+                        <label class="flex items-center justify-between p-2.5 rounded-xl border border-primary bg-primary/5 cursor-pointer transition-all hover:shadow-xs">
+                            <div class="flex items-center gap-2.5">
+                                <input type="checkbox" value="Engine Oil & Filter Service" data-duration="45" data-cost="85" checked 
+                                       onchange="updateServiceSelection()" class="rounded text-primary focus:ring-primary h-4 w-4"/>
+                                <div>
+                                    <p class="text-xs font-semibold text-on-surface">Synthetic Oil & Filter Service</p>
+                                    <p class="text-[10px] text-on-surface-variant">5W-40 Synthetic with OEM filter</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-medium text-outline tabular-nums">~45m</span>
+                        </label>
+
+                        <!-- Item 2 -->
+                        <label class="flex items-center justify-between p-2.5 rounded-xl border border-primary bg-primary/5 cursor-pointer transition-all hover:shadow-xs">
+                            <div class="flex items-center gap-2.5">
+                                <input type="checkbox" value="Brake Pad & Rotor Inspection" data-duration="60" data-cost="140" checked 
+                                       onchange="updateServiceSelection()" class="rounded text-primary focus:ring-primary h-4 w-4"/>
+                                <div>
+                                    <p class="text-xs font-semibold text-on-surface">Brake Pads & Rotors Replacement</p>
+                                    <p class="text-[10px] text-error font-medium">Sensor threshold reached</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-medium text-outline tabular-nums">~60m</span>
+                        </label>
+
+                        <!-- Item 3 -->
+                        <label class="flex items-center justify-between p-2.5 rounded-xl border border-transparent bg-surface-container/60 hover:bg-white cursor-pointer transition-all hover:shadow-xs">
+                            <div class="flex items-center gap-2.5">
+                                <input type="checkbox" value="Wheel Alignment & Balancing" data-duration="30" data-cost="65" 
+                                       onchange="updateServiceSelection()" class="rounded text-primary focus:ring-primary h-4 w-4"/>
+                                <div>
+                                    <p class="text-xs font-semibold text-on-surface">Wheel Alignment & Balancing</p>
+                                    <p class="text-[10px] text-on-surface-variant">Laser camber, toe & dynamic balancing</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-medium text-outline tabular-nums">~30m</span>
+                        </label>
+
+                        <!-- Item 4 -->
+                        <label class="flex items-center justify-between p-2.5 rounded-xl border border-transparent bg-surface-container/60 hover:bg-white cursor-pointer transition-all hover:shadow-xs">
+                            <div class="flex items-center gap-2.5">
+                                <input type="checkbox" value="Cabin Air & Microfilter" data-duration="20" data-cost="40" 
+                                       onchange="updateServiceSelection()" class="rounded text-primary focus:ring-primary h-4 w-4"/>
+                                <div>
+                                    <p class="text-xs font-semibold text-on-surface">Cabin Air & Microfilter</p>
+                                    <p class="text-[10px] text-on-surface-variant">Activated carbon filter sanitize</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-medium text-outline tabular-nums">~20m</span>
+                        </label>
+
+                        <!-- Item 5 -->
+                        <label class="flex items-center justify-between p-2.5 rounded-xl border border-transparent bg-surface-container/60 hover:bg-white cursor-pointer transition-all hover:shadow-xs">
+                            <div class="flex items-center gap-2.5">
+                                <input type="checkbox" value="Comprehensive Diagnostic Scan" data-duration="45" data-cost="90" 
+                                       onchange="updateServiceSelection()" class="rounded text-primary focus:ring-primary h-4 w-4"/>
+                                <div>
+                                    <p class="text-xs font-semibold text-on-surface">Diagnostic Computer Scan</p>
+                                    <p class="text-[10px] text-on-surface-variant">52-point mechanical and safety report</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-medium text-outline tabular-nums">~45m</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Interactive Calendar Date Picker -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-2 font-headline">
+                        Appointment Date & Slot
+                    </label>
+
+                    <!-- Interactive Calendar Grid -->
+                    <div class="bg-surface-container/60 p-3 rounded-2xl border border-white">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-on-surface font-headline" id="calMonthLabel">September 2026</span>
+                            <span class="text-[10px] text-outline font-medium">Mon - Sun</span>
+                        </div>
+                        <!-- Day Headers -->
+                        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-outline mb-1 font-headline">
+                            <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+                        </div>
+                        <!-- Calendar Days Grid -->
+                        <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarDaysGrid">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Time Slots -->
+                    <div class="grid grid-cols-4 gap-2 mt-3" id="timeSlotContainer">
+                        <button type="button" onclick="selectTime(this, '09:00 AM')" class="time-chip-btn py-1.5 rounded-xl border border-outline-variant/60 text-xs font-semibold text-on-surface hover:border-primary transition-all">09:00 AM</button>
+                        <button type="button" onclick="selectTime(this, '11:30 AM')" class="time-chip-btn py-1.5 rounded-xl border-2 border-primary bg-primary text-white text-xs font-semibold transition-all shadow-xs">11:30 AM</button>
+                        <button type="button" onclick="selectTime(this, '02:00 PM')" class="time-chip-btn py-1.5 rounded-xl border border-outline-variant/60 text-xs font-semibold text-on-surface hover:border-primary transition-all">02:00 PM</button>
+                        <button type="button" onclick="selectTime(this, '04:30 PM')" class="time-chip-btn py-1.5 rounded-xl border border-outline-variant/60 text-xs font-semibold text-on-surface hover:border-primary transition-all">04:30 PM</button>
+                    </div>
+                </div>
+
+                <!-- 3. Target Service Center -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1.5 font-headline">
+                        Service Center
+                    </label>
+                    <select id="selectServiceCenter" class="w-full text-xs font-medium rounded-xl border border-outline-variant/50 p-2.5 focus:ring-2 focus:ring-primary focus:border-primary bg-white text-on-surface">
+                        <option value="Pothens Mahindra Authorized Hub">Pothens Mahindra Hub (1.4 km • Thondayad Bypass, Kozhikode)</option>
+                        <option value="ITL Motors Mahindra Service Station">ITL Motors Station (2.9 km • Mini Bypass, Govindapuram)</option>
+                        <option value="Sireesh Auto 4x4 Expedition Bay">Sireesh Auto Bay (4.6 km • West Hill, Kozhikode)</option>
+                        <option value="Malayalam Tata Motors & EV Care Hub">Malayalam Tata EV Hub (1.8 km • Arayidathupalam, Kozhikode)</option>
+                        <option value="Marina Motors Tata Authorized Workshop">Marina Motors Workshop (3.4 km • Eranhipalam)</option>
+                        <option value="KHT Tata Fleet & Heavy Service Center">KHT Tata Fleet (5.8 km • Pantheeramkavu Bypass)</option>
+                    </select>
+                </div>
+
+                <!-- 4. Notes -->
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-1 font-headline">
+                        Notes (Optional)
+                    </label>
+                    <input type="text" id="serviceNotesInput" placeholder="e.g. Check slight steering vibration..." 
+                           class="w-full text-xs rounded-xl border border-outline-variant/50 p-2.5 focus:ring-2 focus:ring-primary focus:border-primary bg-white text-on-surface"/>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-outline-variant/30 bg-surface/50 flex items-center justify-between gap-4">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-outline font-headline">Care+ Coverage</span>
+                    <p class="text-sm font-bold text-emerald-700 font-headline">$0.00 <span class="text-[11px] font-normal text-on-surface-variant font-sans">(Preserved)</span></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="btnCancelBooking" class="px-4 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
+                    <button id="btnConfirmBooking" class="btn-primary-glow px-5 py-2.5 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer shadow-md">
+                        <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                        <span id="btnConfirmText">Confirm Booking</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Booking Confirmed Digital Ticket Stub Modal -->
+    <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-modal border border-white text-center transform scale-95 transition-all duration-300">
+            <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-3 shadow-xs">
+                <span class="material-symbols-outlined text-2xl">check_circle</span>
+            </div>
+            <h3 class="font-headline font-bold text-lg text-on-surface">Appointment Confirmed</h3>
+            <p class="text-xs text-on-surface-variant mt-0.5">Digital confirmation for your MOTORO service</p>
+
+            <div class="mt-4 p-4 rounded-2xl bg-surface-container/60 border border-outline-variant/30 text-left space-y-2.5">
+                <div class="flex justify-between items-center pb-2 border-b border-outline-variant/30">
+                    <span class="text-xs text-on-surface-variant">Booking Code</span>
+                    <span id="successCodeBadge" class="font-mono font-bold text-xs text-primary bg-primary/10 px-2.5 py-0.5 rounded-md">SRV-77189</span>
+                </div>
+                <div>
+                    <span class="text-[11px] text-on-surface-variant block">Services</span>
+                    <p id="successServicesList" class="font-semibold text-xs text-on-surface mt-0.5">Synthetic Oil + Brake Inspection</p>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-on-surface-variant">Slot</span>
+                    <span id="successDateBadge" class="font-semibold text-on-surface">Sep 05 • 11:30 AM</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-on-surface-variant">Service Center</span>
+                    <span id="successLocationBadge" class="font-semibold text-primary">Pothens Mahindra Hub</span>
+                </div>
+            </div>
+
+            <button onclick="closeSuccessModal()" class="mt-5 w-full py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-md cursor-pointer hover:bg-primary/90 transition-all">
+                Done & Add to Calendar
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Driver Log Modal (Fuel & Odo) -->
+    <div id="driverLogModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-modal border border-white text-left">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-base text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">local_gas_station</span>
+                    Quick Driver Log
+                </h3>
+                <button onclick="closeDriverLogModal()" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-sm">close</span></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant mb-1">Fuel Pumped (Litres)</label>
+                    <input type="number" id="quickFuelLitres" value="40" class="w-full text-xs rounded-xl border border-outline-variant/50 p-2.5"/>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant mb-1">Odometer Reading (km)</label>
+                    <input type="number" id="quickOdometer" value="12500" class="w-full text-xs rounded-xl border border-outline-variant/50 p-2.5"/>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant mb-1">Fuel Station</label>
+                    <select id="quickStation" class="w-full text-xs rounded-xl border border-outline-variant/50 p-2.5">
+                        <option>Shell Express Station</option>
+                        <option>BP Connect</option>
+                        <option>Chevron</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="submitQuickDriverLog()" class="mt-4 w-full py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-md cursor-pointer">
+                Save Log Entry
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Toll Wallet Modal -->
+    <div id="walletModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-modal border border-white text-left">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-base text-on-surface flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+                    FastTag Wallet Recharge
+                </h3>
+                <button onclick="closeWalletModal()" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined text-sm">close</span></button>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-3">Current Combined Balance: <strong class="text-primary font-headline">$124.50</strong></p>
+            <div class="flex gap-2 mb-3">
+                <button onclick="document.getElementById('walletRechargeAmt').value=25" class="px-3 py-1.5 rounded-lg bg-surface-container text-xs font-bold text-primary">$25</button>
+                <button onclick="document.getElementById('walletRechargeAmt').value=50" class="px-3 py-1.5 rounded-lg bg-surface-container text-xs font-bold text-primary">$50</button>
+                <button onclick="document.getElementById('walletRechargeAmt').value=100" class="px-3 py-1.5 rounded-lg bg-surface-container text-xs font-bold text-primary">$100</button>
+            </div>
+            <input type="number" id="walletRechargeAmt" value="50" class="w-full text-xs rounded-xl border border-outline-variant/50 p-2.5 mb-3"/>
+            <button onclick="submitWalletRecharge()" class="w-full py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-md cursor-pointer">
+                Complete FastTag Recharge
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Menu Modal -->
+    <div id="profileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-modal border border-white text-left">
+            <div class="flex items-center gap-3 mb-4">
+                <img class="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20 shadow-sm" 
+                     src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" 
+                     alt="Alex Mercer"/>
+                <div>
+                    <h3 class="font-bold text-base text-on-surface">Alex Mercer</h3>
+                    <p class="text-xs text-on-surface-variant">driver@motoro.io</p>
+                    <span class="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-md mt-0.5 inline-block">Fleet Master</span>
+                </div>
+            </div>
+            <div class="space-y-2 border-t border-outline-variant/30 pt-3">
+                <a href="index.html" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container transition-colors text-xs font-semibold text-on-surface">
+                    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">directions_car</span> Garage & Fleet Hub</span>
+                    <span class="material-symbols-outlined text-xs text-outline">arrow_forward</span>
+                </a>
+                <a href="fasttag.html" class="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-surface-container transition-colors text-xs font-semibold text-on-surface text-left">
+                    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">toll</span> NETC FastTag Pass (₹3,450.00)</span>
+                    <span class="material-symbols-outlined text-xs text-outline">arrow_forward</span>
+                </a>
+                <a href="login.html" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-error/10 transition-colors text-xs font-semibold text-error">
+                    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-base">logout</span> Sign Out / Switch Account</span>
+                    <span class="material-symbols-outlined text-xs text-error">arrow_forward</span>
+                </a>
+            </div>
+            <button onclick="closeProfileModal()" class="mt-4 w-full py-2 rounded-xl bg-surface-container text-xs font-bold text-on-surface cursor-pointer">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-3 bg-[#1e2828] text-white px-4 py-3 rounded-2xl shadow-xl border border-white/10">
+        <span class="material-symbols-outlined text-emerald-400 text-xl">check_circle</span>
+        <div>
+            <p id="toastTitle" class="text-xs font-bold">Action Completed</p>
+            <p id="toastDesc" class="text-[11px] text-white/70">Operation executed successfully.</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://127.0.0.1:8000'
+            : '';
+
+        // Fleet vehicles with brand metadata
+        const fleetDB = {
+            'IND-MH12-XUV700': {
+                name: 'Mahindra XUV700 AX7 L',
+                plate: 'MH 12 RN 2024',
+                brand: 'Mahindra',
+                odometer: 14820,
+                fuelLevel: '78% (46.8 L)',
+                serviceDue: 'In 480 km'
+            },
+            'IND-KA01-NEXON-EV': {
+                name: 'Tata Nexon EV Empowered+',
+                plate: 'KA 01 EQ 4050',
+                brand: 'Tata',
+                odometer: 8320,
+                fuelLevel: '84% (34 kWh)',
+                serviceDue: 'In 1,680 km'
+            },
+            'IND-DL08-THAR-4X4': {
+                name: 'Mahindra Thar 4x4 MT',
+                plate: 'DL 08 CA 7788',
+                brand: 'Mahindra',
+                odometer: 16100,
+                fuelLevel: '54% (30.7 L)',
+                serviceDue: 'In 900 km'
+            }
+        };
+
+        // Kozhikode, Kerala Service Centers Database (Filtered by Brand)
+        const serviceCentersDB = [
+            {
+                id: 'pothens-mahindra',
+                name: 'Pothens Mahindra Authorized Hub',
+                brand: 'Mahindra',
+                city: 'Kozhikode',
+                area: 'Thondayad Bypass',
+                address: 'NH Bypass Junction, Thondayad, Kozhikode, Kerala 673017',
+                coords: [11.2678, 75.8015],
+                rating: 4.8,
+                reviews: 840,
+                openBays: '4 Certified Bays Open',
+                specialty: 'AdrenoX AI Diagnostics & mHawk Express Care',
+                phone: '+91 495 274 0800',
+                timing: '8:30 AM - 7:00 PM'
+            },
+            {
+                id: 'itl-mahindra',
+                name: 'ITL Motors Mahindra Service Station',
+                brand: 'Mahindra',
+                city: 'Kozhikode',
+                area: 'Mini Bypass, Govindapuram',
+                address: 'Mini Bypass Rd, Govindapuram, Kozhikode, Kerala 673016',
+                coords: [11.2482, 75.7942],
+                rating: 4.7,
+                reviews: 615,
+                openBays: '3 Express Bays Free',
+                specialty: 'Suspension, Brake Calibration & Periodic Care',
+                phone: '+91 495 274 4111',
+                timing: '9:00 AM - 6:30 PM'
+            },
+            {
+                id: 'sireesh-mahindra',
+                name: 'Sireesh Auto 4x4 Expedition Bay',
+                brand: 'Mahindra',
+                city: 'Kozhikode',
+                area: 'Kannur Road, West Hill',
+                address: 'NH 66, Near West Hill Post Office, Kozhikode, Kerala 673005',
+                coords: [11.2852, 75.7661],
+                rating: 4.9,
+                reviews: 420,
+                openBays: '2 Heavy 4x4 Bays Open',
+                specialty: 'Thar 4x4 Off-Road Rigging & Differential Service',
+                phone: '+91 495 238 2900',
+                timing: '8:00 AM - 7:30 PM'
+            },
+            {
+                id: 'malayalam-tata',
+                name: 'Malayalam Tata Motors & EV Care Hub',
+                brand: 'Tata',
+                city: 'Kozhikode',
+                area: 'Arayidathupalam',
+                address: 'Mavoor Road Extn, Arayidathupalam, Kozhikode, Kerala 673004',
+                coords: [11.2612, 75.7918],
+                rating: 4.9,
+                reviews: 920,
+                openBays: '5 EV Dedicated Bays',
+                specialty: 'High-Voltage LFP Battery Health & 60kW DC Fast Charge',
+                phone: '+91 495 272 5555',
+                timing: '8:30 AM - 7:00 PM'
+            },
+            {
+                id: 'marina-tata',
+                name: 'Marina Motors Tata Authorized Workshop',
+                brand: 'Tata',
+                city: 'Kozhikode',
+                area: 'Karaparamba - Eranhipalam',
+                address: 'Karaparamba Junction, Kozhikode, Kerala 673010',
+                coords: [11.2785, 75.7878],
+                rating: 4.7,
+                reviews: 730,
+                openBays: '4 Passenger Bays Open',
+                specialty: 'EV Thermal Management & Firmware Updates',
+                phone: '+91 495 276 1122',
+                timing: '9:00 AM - 6:30 PM'
+            },
+            {
+                id: 'kht-tata',
+                name: 'KHT Tata Fleet & Heavy Service Center',
+                brand: 'Tata',
+                city: 'Kozhikode',
+                area: 'Pantheeramkavu Bypass',
+                address: 'Calicut Bypass, Pantheeramkavu, Kozhikode, Kerala 673019',
+                coords: [11.2295, 75.8338],
+                rating: 4.8,
+                reviews: 510,
+                openBays: '6 Fleet Bays Free',
+                specialty: 'Commercial Fleet Maintenance, Turnaround & Battery Packs',
+                phone: '+91 495 243 0088',
+                timing: '8:00 AM - 8:00 PM'
+            }
+        ];
+
+        function ensureServiceVehicleEntry(vin) {
+            if (fleetDB[vin]) return fleetDB[vin];
+            let name = 'Indian Passenger Vehicle';
+            let plate = vin.replace('IND-', '').replace(/-/g, ' ');
+            let brand = 'Mahindra';
+            let odo = 12400;
+            try {
+                const fleet = JSON.parse(localStorage.getItem('motoro_fleet') || '[]');
+                const found = fleet.find(c => c.vin === vin);
+                if (found) {
+                    name = found.name;
+                    plate = found.plate || plate;
+                    brand = found.brand || (found.name ? found.name.split(' ')[0] : 'Mahindra');
+                    odo = found.odometer_km || 12400;
+                }
+            } catch (_) {}
+            const isEv = (name.toLowerCase().includes('ev') || name.toLowerCase().includes('nexon'));
+            fleetDB[vin] = {
+                name: name,
+                plate: plate,
+                brand: brand,
+                odometer: odo,
+                fuelLevel: isEv ? '80% (32 kWh)' : '75% (41.2 L)',
+                serviceDue: 'In 2,100 km'
+            };
+            return fleetDB[vin];
+        }
+
+        let selectedVin = localStorage.getItem('motoro_active_vin') || sessionStorage.getItem('motoro_active_vin') || 'IND-MH12-XUV700';
+        ensureServiceVehicleEntry(selectedVin);
+        let currentBrandFilter = (fleetDB[selectedVin]?.brand) || 'Mahindra';
+        let userLocation = {
+            lat: 11.2588,
+            lng: 75.7804,
+            name: 'Kozhikode, Kerala'
+        };
+        let leafletMap = null;
+        let mapMarkers = [];
+        let userLocationMarker = null;
+        let selectedCenter = 'Pothens Mahindra Authorized Hub';
+        let selectedServices = ['Engine Oil & Filter Service', 'Brake Pad & Rotor Inspection'];
+        let selectedDate = 'Sep 05, 2026';
+        let selectedTime = '11:30 AM';
+
+        // Modals
+        const bookingModal = document.getElementById('bookingModal');
+        const successModal = document.getElementById('successModal');
+        const driverLogModal = document.getElementById('driverLogModal');
+        const walletModal = document.getElementById('walletModal');
+
+        // Haversine distance calculator (km)
+        function calcDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of Earth in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return (R * c).toFixed(1);
+        }
+
+        // Initialize Leaflet Map with Kozhikode Kerala phone GPS
+        function initServiceMap() {
+            if (leafletMap) return;
+            const mapContainer = document.getElementById('serviceMap');
+            if (!mapContainer) return;
+
+            leafletMap = L.map('serviceMap', {
+                center: [userLocation.lat, userLocation.lng],
+                zoom: 13,
+                zoomControl: true
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(leafletMap);
+
+            renderUserLocationMarker();
+            renderServiceCenterMarkers();
+        }
+
+        function renderUserLocationMarker() {
+            if (!leafletMap) return;
+            if (userLocationMarker) leafletMap.removeLayer(userLocationMarker);
+
+            const userIcon = L.divIcon({
+                className: 'custom-user-gps-marker',
+                html: `
+                    <div class="relative flex items-center justify-center">
+                        <span class="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-primary-container opacity-75"></span>
+                        <div class="w-5 h-5 rounded-full bg-primary text-white border-2 border-white flex items-center justify-center shadow-lg">
+                            <span class="w-2 h-2 rounded-full bg-primary-fixed"></span>
+                        </div>
+                    </div>
+                `,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+
+            userLocationMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+                .addTo(leafletMap)
+                .bindPopup(`<b>📍 Phone Location</b><br>Kozhikode, Kerala<br><small>11.2588° N, 75.7804° E</small>`);
+        }
+
+        function renderServiceCenterMarkers() {
+            if (!leafletMap) return;
+
+            // Clear old center markers
+            mapMarkers.forEach(m => leafletMap.removeLayer(m));
+            mapMarkers = [];
+
+            const filteredCenters = serviceCentersDB.filter(c => {
+                if (currentBrandFilter === 'ALL') return true;
+                return c.brand === currentBrandFilter;
+            });
+
+            const cardsContainer = document.getElementById('serviceCentersGrid');
+            if (cardsContainer) cardsContainer.innerHTML = '';
+
+            filteredCenters.forEach((center, idx) => {
+                const dist = calcDistance(userLocation.lat, userLocation.lng, center.coords[0], center.coords[1]);
+                const isMahindra = center.brand === 'Mahindra';
+                const markerColor = isMahindra ? '#006a68' : '#0284c7';
+
+                // Custom Leaflet DivIcon
+                const centerIcon = L.divIcon({
+                    className: 'custom-center-marker',
+                    html: `
+                        <div class="flex items-center gap-1 bg-white px-2.5 py-1 rounded-full shadow-lg border-2" style="border-color: ${markerColor}">
+                            <span class="material-symbols-outlined text-sm" style="color: ${markerColor}">build_circle</span>
+                            <span class="text-[10px] font-bold text-on-surface whitespace-nowrap">${center.name.split(' ')[0]} (${dist} km)</span>
+                        </div>
+                    `,
+                    iconSize: [120, 28],
+                    iconAnchor: [60, 14]
+                });
+
+                const marker = L.marker(center.coords, { icon: centerIcon })
+                    .addTo(leafletMap)
+                    .bindPopup(`
+                        <div class="p-1 text-xs">
+                            <b class="text-primary text-sm">${center.name}</b><br>
+                            <span class="text-[11px] text-secondary">${center.address}</span><br>
+                            <span class="font-bold text-emerald-700">${center.openBays}</span> • <b>${dist} km away</b><br>
+                            <button onclick="selectMapCenter('${center.id}')" class="mt-2 w-full py-1 rounded-lg bg-primary text-white font-bold text-[11px]">Select & Book Bay</button>
+                        </div>
+                    `);
+
+                marker.on('click', () => {
+                    selectMapCenter(center.id);
+                });
+
+                mapMarkers.push(marker);
+
+                // Create Card element in grid
+                if (cardsContainer) {
+                    const isSelected = (selectedCenter === center.name || idx === 0);
+                    const borderClass = isSelected ? 'border-2 border-primary bg-primary/5' : 'border border-outline-variant/40 bg-white/70 hover:bg-white';
+                    
+                    const card = document.createElement('div');
+                    card.id = `centerCard-${center.id}`;
+                    card.className = `center-card p-4 rounded-2xl ${borderClass} cursor-pointer transition-all hover:shadow-md`;
+                    card.onclick = () => selectMapCenter(center.id);
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md font-mono">${dist} km</span>
+                            <span class="text-xs font-semibold text-amber-600 flex items-center gap-0.5">★ ${center.rating}</span>
+                        </div>
+                        <p class="text-xs font-bold text-on-surface font-headline leading-snug">${center.name}</p>
+                        <p class="text-[11px] text-on-surface-variant mt-0.5">${center.area}</p>
+                        <div class="mt-2.5 pt-2 border-t border-outline-variant/20 flex items-center justify-between">
+                            <span class="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span> ${center.openBays.replace(' Certified Bays Open', ' Bays').replace(' Express Bays Free', ' Bays').replace(' Dedicated Bays', ' Bays').replace(' Fleet Bays Free', ' Bays')}
+                            </span>
+                            <span class="text-[10px] font-semibold text-primary">Select &rarr;</span>
+                        </div>
+                    `;
+                    cardsContainer.appendChild(card);
+                }
+            });
+        }
+
+        function selectMapCenter(centerId) {
+            const center = serviceCentersDB.find(c => c.id === centerId || c.name === centerId);
+            if (!center) return;
+
+            selectedCenter = center.name;
+            const dist = calcDistance(userLocation.lat, userLocation.lng, center.coords[0], center.coords[1]);
+
+            // Update booking modal select box
+            const selectEl = document.getElementById('selectServiceCenter');
+            if (selectEl) {
+                let found = false;
+                for (let opt of selectEl.options) {
+                    if (opt.value.includes(center.name) || opt.text.includes(center.name)) {
+                        selectEl.value = opt.value;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const newOpt = new Option(`${center.name} (${dist} km • Kozhikode)`, center.name, true, true);
+                    selectEl.add(newOpt);
+                }
+            }
+
+            // Update card styling
+            document.querySelectorAll('.center-card').forEach(c => {
+                c.className = 'center-card p-4 rounded-2xl border border-outline-variant/40 bg-white/70 hover:bg-white cursor-pointer transition-all hover:shadow-md';
+            });
+            const activeCard = document.getElementById(`centerCard-${center.id}`);
+            if (activeCard) {
+                activeCard.className = 'center-card p-4 rounded-2xl border-2 border-primary bg-primary/5 cursor-pointer transition-all hover:shadow-md';
+            }
+
+            // Center and zoom map smoothly
+            if (leafletMap) {
+                leafletMap.flyTo(center.coords, 14, { duration: 0.8 });
+            }
+
+            showToast('Service Center Selected', `${center.name} (${dist} km • Kozhikode, Kerala)`);
+        }
+
+        function detectUserLocation(manual = false) {
+            const syncIcon = document.getElementById('gpsSyncIcon');
+            if (syncIcon) syncIcon.classList.add('animate-spin');
+
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        userLocation.lat = pos.coords.latitude;
+                        userLocation.lng = pos.coords.longitude;
+                        userLocation.name = 'Live GPS Coordinates';
+                        finishLocationUpdate(true);
+                    },
+                    (err) => {
+                        // Fallback to Kozhikode, Kerala
+                        userLocation.lat = 11.2588;
+                        userLocation.lng = 75.7804;
+                        userLocation.name = 'Kozhikode, Kerala';
+                        finishLocationUpdate(false);
+                    },
+                    { timeout: 4000 }
+                );
+            } else {
+                finishLocationUpdate(false);
+            }
+        }
+
+        function finishLocationUpdate(isLiveGps) {
+            const syncIcon = document.getElementById('gpsSyncIcon');
+            if (syncIcon) syncIcon.classList.remove('animate-spin');
+
+            const btnLabel = document.getElementById('gpsButtonLabel');
+            if (btnLabel) {
+                btnLabel.textContent = isLiveGps 
+                    ? '📍 Live GPS Active' 
+                    : '📍 Kozhikode, Kerala (Phone GPS)';
+            }
+
+            const coordText = document.getElementById('userCoordinatesText');
+            if (coordText) {
+                coordText.textContent = `Phone GPS: ${userLocation.lat.toFixed(4)}° N, ${userLocation.lng.toFixed(4)}° E • Kozhikode, Kerala`;
+            }
+
+            if (leafletMap) {
+                leafletMap.setView([userLocation.lat, userLocation.lng], 13);
+                renderUserLocationMarker();
+                renderServiceCenterMarkers();
+            }
+
+            if (isLiveGps) {
+                showToast('GPS Synced', `Position updated: Kozhikode, Kerala`);
+            }
+        }
+
+        function selectServiceVehicle(vin) {
+            ensureServiceVehicleEntry(vin);
+            selectedVin = vin;
+            try {
+                localStorage.setItem('motoro_active_vin', vin);
+                sessionStorage.setItem('motoro_active_vin', vin);
+            } catch (_) {}
+            const car = fleetDB[vin];
+            if (!car) return;
+
+            if (document.getElementById('headerVehicleName')) document.getElementById('headerVehicleName').textContent = car.name;
+            if (document.getElementById('headerVinBadge')) document.getElementById('headerVinBadge').textContent = car.plate;
+            if (document.getElementById('selectedVehicleLabel')) document.getElementById('selectedVehicleLabel').textContent = car.plate;
+            if (document.getElementById('modalVehicleName')) document.getElementById('modalVehicleName').textContent = car.name;
+            if (document.getElementById('modalVehicleVin')) document.getElementById('modalVehicleVin').textContent = `VIN: ${vin}`;
+            if (document.getElementById('statOdometer')) {
+                document.getElementById('statOdometer').innerHTML = `${car.odometer.toLocaleString()} <span class="text-xs font-normal text-outline">km</span>`;
+            }
+
+            // Auto-filter centers by car brand
+            filterCentersByBrand(car.brand);
+
+            const menu = document.getElementById('vehicleDropdownMenu') || document.getElementById('serviceVehicleDropdownMenu');
+            if (menu) menu.classList.add('hidden');
+
+            showToast('Vehicle Switched', `${car.name} (${car.brand} Service Centers Filtered)`);
+        }
+
+        window.onVehicleChanged = selectServiceVehicle;
+
+        function toggleVehicleDropdown() {
+            const menu = document.getElementById('vehicleDropdownMenu') || document.getElementById('serviceVehicleDropdownMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function toggleServiceVehicleDropdown() {
+            toggleVehicleDropdown();
+        }
+
+        function changeVehicle(vin) {
+            selectServiceVehicle(vin);
+        }
+
+        function openNotificationsModal() {
+            showToast('Fleet Maintenance Alerts', 'All systems checked: Next scheduled service due in 2,450 km.');
+        }
+
+        document.addEventListener('click', (e) => {
+            const btn = document.getElementById('vehicleDropdownBtn') || document.getElementById('serviceVehicleDropdownBtn');
+            const menu = document.getElementById('vehicleDropdownMenu') || document.getElementById('serviceVehicleDropdownMenu');
+            if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function filterCentersByBrand(brand) {
+            currentBrandFilter = brand;
+
+            const allBtn = document.getElementById('filterBtnALL');
+            const mahBtn = document.getElementById('filterBtnMahindra');
+            const tataBtn = document.getElementById('filterBtnTata');
+            const badge = document.getElementById('brandFilterBadge');
+
+            [allBtn, mahBtn, tataBtn].forEach(b => {
+                if (b) b.className = 'brand-filter-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold text-secondary hover:text-primary transition-all';
+            });
+
+            if (brand === 'Mahindra') {
+                if (mahBtn) mahBtn.className = 'brand-filter-btn active px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-primary transition-all';
+                if (badge) {
+                    badge.textContent = 'Mahindra Authorized';
+                    badge.className = 'text-[10px] font-bold bg-primary text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider';
+                }
+            } else if (brand === 'Tata') {
+                if (tataBtn) tataBtn.className = 'brand-filter-btn active px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-primary transition-all';
+                if (badge) {
+                    badge.textContent = 'Tata EV Certified';
+                    badge.className = 'text-[10px] font-bold bg-emerald-700 text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider';
+                }
+            } else {
+                if (allBtn) allBtn.className = 'brand-filter-btn active px-2.5 py-1 rounded-lg text-[11px] font-bold text-white bg-primary transition-all';
+                if (badge) {
+                    badge.textContent = 'All Authorized Brands';
+                    badge.className = 'text-[10px] font-bold bg-secondary text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider';
+                }
+            }
+
+            renderServiceCenterMarkers();
+        }
+
+        // Render Calendar Grid
+        function renderCalendarGrid() {
+            const grid = document.getElementById('calendarDaysGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            const firstDayOffset = 1;
+            const daysInMonth = 30;
+
+            for (let i = 0; i < firstDayOffset; i++) {
+                grid.innerHTML += `<div class="py-1"></div>`;
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isSelected = (d === 5);
+                const dayClass = isSelected 
+                    ? 'cal-day-cell selected py-1 rounded-lg text-white font-bold cursor-pointer'
+                    : 'cal-day-cell py-1 rounded-lg text-on-surface cursor-pointer';
+                
+                grid.innerHTML += `
+                    <div onclick="selectCalendarDay(this, ${d})" class="${dayClass}">
+                        ${d}
+                    </div>
+                `;
+            }
+        }
+
+        function selectCalendarDay(el, day) {
+            document.querySelectorAll('.cal-day-cell').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedDate = `Sep ${day.toString().padStart(2, '0')}, 2026`;
+        }
+
+        function selectTime(el, timeText) {
+            document.querySelectorAll('.time-chip-btn').forEach(t => {
+                t.className = 'time-chip-btn py-1.5 rounded-xl border border-outline-variant/60 text-xs font-semibold text-on-surface hover:border-primary transition-all';
+            });
+            el.className = 'time-chip-btn py-1.5 rounded-xl border-2 border-primary bg-primary text-white text-xs font-semibold transition-all shadow-sm';
+            selectedTime = timeText;
+        }
+
+        function updateServiceSelection() {
+            const checkedBoxes = document.querySelectorAll('#servicesChecklist input[type="checkbox"]:checked');
+            selectedServices = Array.from(checkedBoxes).map(cb => cb.value);
+
+            let totalMinutes = 0;
+            checkedBoxes.forEach(cb => {
+                totalMinutes += parseInt(cb.dataset.duration || 30);
+            });
+
+            const hrs = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            const durationStr = hrs > 0 ? `${hrs}h ${mins > 0 ? mins + 'm' : ''}` : `${mins}m`;
+
+            document.getElementById('selectedServicesCount').textContent = `${selectedServices.length} Selected • ~${durationStr}`;
+            document.getElementById('btnConfirmText').textContent = `Book ${selectedServices.length} Services (~${durationStr})`;
+        }
+
+        function openBookingModal() {
+            renderCalendarGrid();
+            bookingModal.classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('bookingModalCard').classList.remove('scale-95');
+            document.getElementById('bookingModalCard').classList.add('scale-100');
+        }
+
+        function closeBookingModal() {
+            bookingModal.classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('bookingModalCard').classList.remove('scale-100');
+            document.getElementById('bookingModalCard').classList.add('scale-95');
+        }
+
+        function openBookingWithPreset(serviceName) {
+            openBookingModal();
+            document.querySelectorAll('#servicesChecklist input[type="checkbox"]').forEach(cb => {
+                if (cb.value.includes(serviceName.split(' ')[0])) {
+                    cb.checked = true;
+                }
+            });
+            updateServiceSelection();
+        }
+
+        function closeSuccessModal() {
+            successModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Quick log modal
+        function openDriverLogModal() {
+            driverLogModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeDriverLogModal() {
+            driverLogModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+        async function submitQuickDriverLog() {
+            const litres = parseFloat(document.getElementById('quickFuelLitres').value) || 30;
+            const odo = parseInt(document.getElementById('quickOdometer').value) || 12500;
+            const station = document.getElementById('quickStation').value;
+
+            try {
+                await fetch(`${API_BASE}/api/v1/vehicles/${selectedVin}/fuel-charge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount_litres: litres, fuel_station: station })
+                });
+                await fetch(`${API_BASE}/api/v1/vehicles/${selectedVin}/odometer`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ odometer_km: odo })
+                });
+            } catch (_) {}
+
+            closeDriverLogModal();
+            document.getElementById('statOdometer').innerHTML = `${odo.toLocaleString()} <span class="text-xs font-normal text-outline">km</span>`;
+            showToast('Driver Log Saved', `Logged ${litres} L at ${station} • Odo: ${odo} km`);
+        }
+
+        // Wallet modal
+        function openWalletModal() {
+            walletModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeWalletModal() {
+            walletModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Profile modal
+        const profileModal = document.getElementById('profileModal');
+        function openProfileModal() {
+            if (profileModal) profileModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeProfileModal() {
+            if (profileModal) profileModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+        async function submitWalletRecharge() {
+            const amt = parseFloat(document.getElementById('walletRechargeAmt').value) || 50;
+            try {
+                await fetch(`${API_BASE}/api/v1/wallet/recharge`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amt })
+                });
+            } catch (_) {}
+
+            closeWalletModal();
+            showToast('Toll Wallet Recharged', `Added $${amt.toFixed(2)} to FastTag Pass`);
+        }
+
+        function showToast(title, desc) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastDesc').textContent = desc;
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 3000);
+        }
+
+        // Event Listeners
+        document.getElementById('btnOpenBookingModal').addEventListener('click', openBookingModal);
+        document.getElementById('btnCloseModal').addEventListener('click', closeBookingModal);
+        document.getElementById('btnCancelBooking').addEventListener('click', closeBookingModal);
+
+        // Submit Booking
+        document.getElementById('btnConfirmBooking').addEventListener('click', async () => {
+            const btn = document.getElementById('btnConfirmBooking');
+            btn.disabled = true;
+            btn.innerHTML = `<span>Booking Appointment...</span>`;
+
+            const center = document.getElementById('selectServiceCenter').value;
+            const notes = document.getElementById('serviceNotesInput').value.trim();
+            const dateStr = `${selectedDate} (${selectedTime})`;
+
+            let code = 'SRV-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/vehicles/${selectedVin}/service-schedule`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        service_types: selectedServices,
+                        preferred_date: dateStr,
+                        service_center: center,
+                        notes: notes
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.confirmation_code) code = data.confirmation_code;
+                }
+            } catch (_) {}
+
+            btn.disabled = false;
+            btn.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span><span>Confirm Booking</span>`;
+
+            closeBookingModal();
+
+            // Populate success ticket stub
+            document.getElementById('successCodeBadge').textContent = code;
+            document.getElementById('successServicesList').textContent = selectedServices.join(' + ');
+            document.getElementById('successDateBadge').textContent = dateStr;
+            document.getElementById('successLocationBadge').textContent = center.split(' ')[0];
+            successModal.classList.remove('opacity-0', 'pointer-events-none');
+
+            // Prepend new node in timeline
+            const timeline = document.getElementById('timelineContainer');
+            const node = document.createElement('div');
+            node.className = 'timeline-item relative group';
+            node.innerHTML = `
+                <div class="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-emerald-500 shadow-sm"></div>
+                <div class="bg-emerald-50/70 p-4.5 rounded-2xl border border-emerald-200 shadow-sm">
+                    <div class="flex items-center justify-between flex-wrap gap-2 mb-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-headline text-[11px] font-bold text-emerald-700 uppercase">${dateStr}</span>
+                            <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Confirmed</span>
+                        </div>
+                        <span class="text-xs font-headline text-on-surface-variant font-medium">12,450 km</span>
+                    </div>
+                    <h4 class="font-body font-bold text-sm text-on-surface">${selectedServices.join(' + ')}</h4>
+                    <p class="text-xs text-on-surface-variant mt-1">${center} • Slot: ${selectedTime}</p>
+                    <div class="mt-2.5 pt-2 border-t border-emerald-200 flex items-center justify-between text-[11px]">
+                        <span class="text-emerald-800 font-semibold">Service Bay Allocated</span>
+                        <span class="font-headline text-primary font-bold">ID: ${code}</span>
+                    </div>
+                </div>
+            `;
+            timeline.insertBefore(node, timeline.firstChild);
+            showToast('Service Booked', `Code ${code} confirmed at ${center}`);
+        });
+
+        // Initialize live vehicle
+        async function fetchLiveVehicle() {
+            try {
+                const res = await fetch(`${API_BASE}/api/v1/vehicles`);
+                if (res.ok) {
+                    const list = await res.json();
+                    const car = list.find(v => v.is_selected) || list[0];
+                    if (car) {
+                        selectedVin = car.vin;
+                        if (document.getElementById('headerVehicleName')) document.getElementById('headerVehicleName').textContent = car.name;
+                        if (document.getElementById('headerVinBadge')) document.getElementById('headerVinBadge').textContent = `VIN ...${car.vin.slice(-4)}`;
+                        if (document.getElementById('selectedVehicleLabel')) document.getElementById('selectedVehicleLabel').textContent = car.registration_number || car.plate || car.name;
+                        if (document.getElementById('modalVehicleName')) document.getElementById('modalVehicleName').textContent = car.name;
+                        if (document.getElementById('modalVehicleVin')) document.getElementById('modalVehicleVin').textContent = `VIN: ${car.vin}`;
+                        if (document.getElementById('statOdometer') && car.odometer_km) {
+                            document.getElementById('statOdometer').innerHTML = `${car.odometer_km.toLocaleString()} <span class="text-xs font-normal text-outline">km</span>`;
+                        }
+                    }
+                }
+            } catch (_) {}
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            selectServiceVehicle(selectedVin);
+            fetchLiveVehicle();
+            updateServiceSelection();
+            initServiceMap();
+            detectUserLocation(false);
+        });
+    </script>
+    <!-- NATIVE MOBILE BOTTOM NAVIGATION BAR (< 768px) -->
+    <nav class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-2xl border-t border-slate-200/80 py-1.5 px-3 md:hidden flex justify-around items-center shadow-lg">
+        <a href="index.html" class="mobile-nav-btn flex flex-col items-center justify-center gap-0.5 text-[10px] text-slate-500">
+            <div class="mobile-icon-box w-10 h-7 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl">directions_car</span>
+            </div>
+            <span>Garage</span>
+        </a>
+        <a href="service.html" class="mobile-nav-btn active flex flex-col items-center justify-center gap-0.5 text-[10px]">
+            <div class="mobile-icon-box w-10 h-7 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl">build_circle</span>
+            </div>
+            <span>Services</span>
+        </a>
+        <a href="fuel_odo.html" class="mobile-nav-btn flex flex-col items-center justify-center gap-0.5 text-[10px] text-slate-500">
+            <div class="mobile-icon-box w-10 h-7 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl">local_gas_station</span>
+            </div>
+            <span>Fuel Log</span>
+        </a>
+        <a href="fasttag.html" class="mobile-nav-btn flex flex-col items-center justify-center gap-0.5 text-[10px] text-slate-500">
+            <div class="mobile-icon-box w-10 h-7 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl">toll</span>
+            </div>
+            <span>FastTag</span>
+        </a>
+        <a href="qr_contact.html" class="mobile-nav-btn flex flex-col items-center justify-center gap-0.5 text-[10px] text-slate-500">
+            <div class="mobile-icon-box w-10 h-7 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+            </div>
+            <span>QR Tag</span>
+        </a>
+    </nav>
+    <script src="assets/js/motoro-fleet-menu.js"></script>
+</body>
+</html>

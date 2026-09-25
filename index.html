@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+        name="viewport" />
+    <meta name="theme-color" content="#006a68" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>MOTORO - Indian Connected Fleet & Telemetry Hub</title>
+
+    <!-- Tailwind CSS with Forms & Container Queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#006a68",
+                        "primary-dark": "#004d4b",
+                        "primary-container": "#2bb5b2",
+                        "primary-fixed": "#7bf6f2",
+                        "primary-fixed-dim": "#5bd9d6",
+                        "accent-electric": "#0df2c9",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#004140",
+
+                        secondary: "#4d6262",
+                        "secondary-container": "#d0e7e6",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#243434",
+
+                        tertiary: "#006a67",
+                        "tertiary-container": "#4eb2af",
+                        "on-tertiary": "#ffffff",
+
+                        background: "#f4fafa",
+                        "on-background": "#121919",
+                        surface: "#f4fafa",
+                        "surface-dim": "#d0dada",
+                        "surface-bright": "#f4fafa",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#eff6f6",
+                        "surface-container": "#e8f1f1",
+                        "surface-container-high": "#e1ebeb",
+                        "surface-container-highest": "#d8e4e4",
+                        "on-surface": "#121919",
+                        "on-surface-variant": "#3a4948",
+                        outline: "#697a79",
+                        "outline-variant": "#bac8c7",
+
+                        error: "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+
+                        warning: "#b05700",
+                        "warning-container": "#ffdcbb",
+
+                        success: "#006c4c",
+                        "success-container": "#89f8c7",
+                    },
+                    borderRadius: {
+                        'xl': "1rem",
+                        '2xl': "1.35rem",
+                        '3xl': "1.75rem",
+                        '4xl': "2.25rem",
+                        full: "9999px"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+                        headline: ["Outfit", "Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "SF Mono", "Consolas", "monospace"],
+                    },
+                    boxShadow: {
+                        'glass': '0 16px 36px -8px rgba(0, 106, 104, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03)',
+                        'glass-hover': '0 20px 40px -10px rgba(0, 106, 104, 0.16), 0 4px 12px rgba(0, 0, 0, 0.04)',
+                        'glow-teal': '0 0 24px rgba(43, 181, 178, 0.4)',
+                        'glow-pill': '0 4px 18px rgba(0, 106, 104, 0.35)',
+                        'modal': '0 28px 64px -16px rgba(10, 30, 30, 0.35)',
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.012em;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        .font-headline {
+            font-family: 'Outfit', 'Inter', sans-serif;
+            letter-spacing: -0.022em;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Luminous Glass Cards */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.90) 0%, rgba(244, 250, 250, 0.80) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 16px 36px -8px rgba(0, 106, 104, 0.08), 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(43, 181, 178, 0.4);
+            box-shadow: 0 22px 48px -10px rgba(0, 106, 104, 0.14), 0 4px 12px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .glass-card-static {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 252, 252, 0.85) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 12px 30px -8px rgba(0, 106, 104, 0.07);
+        }
+
+        .btn-primary-glow {
+            background: linear-gradient(135deg, #2bb5b2 0%, #006a68 100%);
+            box-shadow: 0 10px 22px -4px rgba(0, 106, 104, 0.42);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-primary-glow:hover {
+            box-shadow: 0 14px 28px -4px rgba(0, 106, 104, 0.55);
+            transform: translateY(-1.5px);
+        }
+
+        .modal-backdrop {
+            background: rgba(12, 24, 24, 0.68);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        @keyframes pulseDot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.35;
+                transform: scale(1.25);
+            }
+        }
+
+        .pulse-dot {
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        /* Mobile Bottom Nav Floating Pill */
+        .mobile-floating-nav {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 16px 36px -4px rgba(0, 106, 104, 0.18), 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Circular Gauge Styles */
+        .circular-progress {
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .circular-progress-bg {
+            stroke: #e2ecec;
+        }
+
+        .circular-progress-bar {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Horizontal Scroll Carousel Styles */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .fleet-scroll-track {
+            mask-image: linear-gradient(to right, black 92%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, black 92%, transparent 100%);
+        }
+        @media (max-width: 640px) {
+            .fleet-scroll-track {
+                mask-image: none;
+                -webkit-mask-image: none;
+            }
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(244, 250, 250, 0.6);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(43, 181, 178, 0.35);
+            border-radius: 9999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 106, 104, 0.7);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background text-on-surface font-sans antialiased min-h-screen relative pb-28 md:pb-14 overflow-x-hidden">
+
+    <!-- Ambient Glowing Orbs -->
+    <div class="fixed -top-32 -left-32 w-96 h-96 bg-primary-fixed/25 rounded-full blur-3xl pointer-events-none -z-10">
+    </div>
+    <div
+        class="fixed top-1/3 -right-32 w-96 h-96 bg-secondary-container/35 rounded-full blur-3xl pointer-events-none -z-10">
+    </div>
+    <div
+        class="fixed -bottom-32 left-1/3 w-96 h-96 bg-accent-electric/15 rounded-full blur-3xl pointer-events-none -z-10">
+    </div>
+
+    <!-- MASTER TOP APP BAR -->
+    <header class="sticky top-0 z-40 bg-white/85 backdrop-blur-2xl border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-2.5 transition-all">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="flex items-center gap-2.5 group">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-white shadow-md shadow-primary/25 group-hover:scale-105 transition-transform">
+                        <span class="material-symbols-outlined text-2xl">toll</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-headline font-extrabold text-xl tracking-tight text-slate-900">MOTORO</span>
+                        <span class="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full tracking-wide whitespace-nowrap">
+                            <span>BHARAT</span>
+                            <svg class="w-3.5 h-2.5 rounded-xs overflow-hidden shadow-xs shrink-0 inline-block" viewBox="0 0 24 16">
+                                <rect width="24" height="5.33" fill="#FF9933"/>
+                                <rect y="5.33" width="24" height="5.33" fill="#FFFFFF"/>
+                                <rect y="10.67" width="24" height="5.33" fill="#138808"/>
+                                <circle cx="12" cy="8" r="2" stroke="#000080" stroke-width="0.7" fill="none"/>
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Master Navigation Tabs -->
+            <nav class="hidden lg:flex items-center p-1 bg-slate-100/90 rounded-full border border-slate-200/90 shadow-inner">
+                <a href="index.html" class="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold text-white bg-gradient-to-r from-primary to-primary-hover shadow-sm">
+                    <span class="material-symbols-outlined text-base">directions_car</span>
+                    <span>Garage Fleet</span>
+                </a>
+                <a href="service.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">build_circle</span>
+                    <span>Services</span>
+                </a>
+                <a href="fuel_odo.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">local_gas_station</span>
+                    <span>Fuel & Odo</span>
+                </a>
+                <a href="fasttag.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">toll</span>
+                    <span>FastTag</span>
+                </a>
+                <a href="qr_contact.html" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-primary hover:bg-white/80 transition-all">
+                    <span class="material-symbols-outlined text-base">qr_code_scanner</span>
+                    <span>QR Tag</span>
+                </a>
+            </nav>
+
+            <!-- Right Controls: Vehicle Switcher & User Profile -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Vehicle Selector Dropdown -->
+                <div class="relative">
+                    <button id="vehicleDropdownBtn" onclick="toggleVehicleDropdown()" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-semibold text-slate-900 shadow-xs transition-all cursor-pointer">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot"></span>
+                        <span id="selectedVehicleLabel" class="font-mono font-bold tracking-wide">MH 12 RN 2024</span>
+                        <span class="material-symbols-outlined text-sm text-slate-500">expand_more</span>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div id="vehicleDropdownMenu" class="hidden absolute right-0 mt-2 w-72 rounded-2xl bg-white p-2 shadow-2xl z-50 border border-slate-200">
+                        <p class="text-[10px] font-headline uppercase tracking-wider text-slate-400 font-bold px-3 py-1.5">Enrolled Fleet Tags</p>
+                        <div class="space-y-1">
+                            <button onclick="changeVehicle('IND-MH12-XUV700')" class="w-full text-left p-2 rounded-xl hover:bg-teal-50 flex items-center justify-between transition-colors">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900">Mahindra XUV700</p>
+                                    <p class="text-[10px] text-slate-500 font-mono">MH 12 RN 2024 • ICICI FASTag</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
+                            </button>
+                            <button onclick="changeVehicle('IND-KA01-NEXON-EV')" class="w-full text-left p-2 rounded-xl hover:bg-teal-50 flex items-center justify-between transition-colors">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900">Tata Nexon EV</p>
+                                    <p class="text-[10px] text-slate-500 font-mono">KA 01 EQ 4050 • HDFC FASTag</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">Active</span>
+                            </button>
+                            <button onclick="changeVehicle('IND-DL08-THAR-4X4')" class="w-full text-left p-2 rounded-xl hover:bg-teal-50 flex items-center justify-between transition-colors">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900">Mahindra Thar 4x4</p>
+                                    <p class="text-[10px] text-slate-500 font-mono">DL 08 CA 7788 • SBI FASTag</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Low Bal</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Button -->
+                <button onclick="openNotificationsModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200/80 flex items-center justify-center text-slate-700 transition-colors relative cursor-pointer" title="Notifications">
+                    <span class="material-symbols-outlined text-xl">notifications</span>
+                    <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white"></span>
+                </button>
+
+                <!-- Profile & Logout -->
+                <div class="flex items-center gap-2 border-l border-slate-200 pl-2 sm:pl-3">
+                    <a href="account.html" class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center text-xs font-bold font-headline shadow-sm hover:opacity-90 hover:ring-2 hover:ring-primary/40 transition-all cursor-pointer" title="Driver Account & Profile">
+                        VS
+                    </a>
+                    <a href="login.html" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-500 flex items-center justify-center transition-colors" title="Logout">
+                        <span class="material-symbols-outlined text-base">logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN DASHBOARD CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 mt-4 sm:mt-6 space-y-5 sm:space-y-6">
+
+        <!-- SECTION 1: BENTO FLEET MACRO KPI RIBBON -->
+        <section aria-label="Fleet Macro Overview"
+            class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+
+            <!-- KPI 1: Active Fleet -->
+            <div
+                class="glass-card-static rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-secondary">Indian Fleet</span>
+                    <div class="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">garage</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-2xl sm:text-3xl font-headline font-extrabold text-on-surface"
+                            id="statFleetCount">3</span>
+                        <span class="text-xs font-semibold text-secondary">Vehicles</span>
+                    </div>
+                    <div class="mt-1 flex items-center gap-1 text-[11px] text-emerald-700 font-bold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>2 SUVs • 1 Connected EV</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 2: Total Verified Km -->
+            <div
+                class="glass-card-static rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-secondary">Total
+                        Mileage</span>
+                    <div class="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">speed</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-2xl sm:text-3xl font-headline font-extrabold text-on-surface tabular-nums"
+                            id="statTotalKm">45,570</span>
+                        <span class="text-xs font-semibold text-secondary">km</span>
+                    </div>
+                    <div class="mt-1 text-[11px] text-on-surface-variant font-medium flex items-center gap-1">
+                        <span class="material-symbols-outlined text-xs text-primary">trending_up</span>
+                        <span>+1,240 km this month</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 3: Fuel / Energy Level -->
+            <div
+                class="glass-card-static rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-secondary">Energy
+                        Reserve</span>
+                    <div class="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">local_gas_station</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-2xl sm:text-3xl font-headline font-extrabold text-primary tabular-nums"
+                            id="statActiveFuel">78%</span>
+                        <span class="text-xs font-semibold text-secondary">(46.8 L)</span>
+                    </div>
+                    <div class="mt-1 text-[11px] text-primary font-bold">
+                        <span>~620 km Estimated Range</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 4: ARAI / Real Mileage -->
+            <div
+                class="glass-card-static rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-secondary">Fuel Economy</span>
+                    <div class="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">eco</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline gap-1.5">
+                        <span
+                            class="text-2xl sm:text-3xl font-headline font-extrabold text-emerald-700 tabular-nums">14.6</span>
+                        <span class="text-xs font-semibold text-secondary">km/L</span>
+                    </div>
+                    <div class="mt-1 flex items-center gap-1 text-[11px] text-emerald-800 font-bold">
+                        <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded">+6% vs ARAI</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 5: NETC FastTag Balance -->
+            <div
+                class="glass-card-static rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden col-span-2 sm:col-span-1 group hover:border-primary/40 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-secondary">NETC FASTag</span>
+                    <div class="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-base">toll</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-baseline justify-between">
+                        <span class="text-2xl sm:text-3xl font-headline font-extrabold text-on-surface tabular-nums"
+                            id="statWalletBalance">₹3,450</span>
+                        <button onclick="openWalletModal()"
+                            class="text-[11px] font-extrabold text-primary hover:underline flex items-center gap-0.5 cursor-pointer">
+                            <span>Top-Up</span>
+                            <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                        </button>
+                    </div>
+                    <div class="mt-1 text-[11px] text-emerald-700 font-bold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>Auto-Debit Active on Expressways</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- SECTION 2: COMMAND CENTER HERO - TELEMETRY HUD & VEHICLE SHOWCASE -->
+        <section aria-label="Active Vehicle Telemetry Command Center"
+            class="glass-panel rounded-3xl p-5 sm:p-7 relative overflow-hidden border border-white">
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative z-10">
+
+                <!-- Left Column (7 Cols): Telemetry Health Pod & Controls -->
+                <div class="lg:col-span-7 space-y-4 sm:space-y-5">
+
+                    <!-- Vehicle Status Chips -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span
+                            class="text-xs font-headline font-bold bg-primary text-white px-3 py-1 rounded-full shadow-xs"
+                            id="heroFuelType">
+                            Diesel • mHawk 2.2L
+                        </span>
+                        <span
+                            class="text-xs font-bold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full border border-emerald-300 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600 pulse-dot"></span>
+                            <span>Telemetry Live</span>
+                        </span>
+                        <span
+                            class="text-xs font-mono font-bold bg-surface-container text-on-surface px-3 py-1 rounded-full border border-outline-variant/30"
+                            id="heroVinText">
+                            MH 12 RN 2024
+                        </span>
+                    </div>
+
+                    <!-- Vehicle Name & Subtitle -->
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-on-surface tracking-tight"
+                            id="heroCarName">
+                            Mahindra XUV700 AX7 L
+                        </h1>
+                        <p class="text-xs sm:text-sm text-on-surface-variant mt-1" id="heroCarSubtitle">
+                            All-Wheel Drive • AdrenoX Telemetry Active • mHawk 185 PS
+                        </p>
+                    </div>
+
+                    <!-- Telemetry Meters HUD (Fuel Gauge & Estimated Range) -->
+                    <div class="pt-1">
+                        <!-- HUD Pod 1: Fuel / SoC Progress Meter -->
+                        <div
+                            class="bg-white/80 rounded-2xl p-3.5 border border-outline-variant/30 shadow-xs flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3.5 min-w-0">
+                                <!-- Circular Gauge -->
+                                <div class="relative w-16 h-16 shrink-0 flex items-center justify-center">
+                                    <svg class="w-16 h-16 circular-progress">
+                                        <circle class="circular-progress-bg" stroke-width="5" fill="transparent" r="26"
+                                            cx="32" cy="32" />
+                                        <circle id="heroCircularProgress" class="circular-progress-bar"
+                                            stroke="url(#tealGradient)" stroke-width="5" stroke-dasharray="163.36"
+                                            stroke-dashoffset="35.9" stroke-linecap="round" fill="transparent" r="26"
+                                            cx="32" cy="32" />
+                                    </svg>
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                        <span class="font-headline font-extrabold text-sm text-primary tabular-nums"
+                                            id="heroGaugePercent">78%</span>
+                                    </div>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="text-[11px] font-extrabold uppercase tracking-wider text-secondary"
+                                        id="heroTankLabel">Diesel Tank Level</p>
+                                    <p class="text-sm sm:text-base font-bold text-on-surface truncate" id="heroFuelPercent">46.8 / 60.0 Litres</p>
+                                </div>
+                            </div>
+                            <div class="text-right shrink-0 bg-surface-container/60 px-3.5 py-2 rounded-xl border border-outline-variant/20">
+                                <p class="text-[10px] uppercase tracking-wider text-secondary font-bold">Est. Range</p>
+                                <p class="text-sm sm:text-base font-black text-primary">620 km</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar for Fuel Tank -->
+                    <div>
+                        <div
+                            class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden p-0.5 border border-outline-variant/30">
+                            <div class="h-full bg-gradient-to-r from-primary-container via-primary to-primary-dark rounded-full transition-all duration-700"
+                                id="heroFuelBar" style="width: 78%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-2 sm:flex items-center gap-2.5 pt-1">
+                        <a href="service.html"
+                            class="btn-primary-glow text-white text-xs font-bold px-4 py-3 rounded-2xl flex items-center justify-center gap-2 shadow-md col-span-2 sm:col-span-1">
+                            <span class="material-symbols-outlined text-[18px]">build_circle</span>
+                            <span>Book Authorized Bay</span>
+                        </a>
+                        <button onclick="openDriverLogModal(0)"
+                            class="bg-white hover:bg-surface-container border border-outline-variant/50 text-on-surface text-xs font-bold px-3.5 py-3 rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:shadow-sm">
+                            <span class="material-symbols-outlined text-[18px] text-primary">local_gas_station</span>
+                            <span>Log Fuel Receipt</span>
+                        </button>
+                        <button onclick="openDriverLogModal(1)"
+                            class="bg-white hover:bg-surface-container border border-outline-variant/50 text-on-surface text-xs font-bold px-3.5 py-3 rounded-2xl flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:shadow-sm">
+                            <span class="material-symbols-outlined text-[18px] text-primary">speed</span>
+                            <span>Update Cluster Km</span>
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Right Column (5 Cols): 3D Vehicle Showcase Card with VAHAN Hologram -->
+                <div class="lg:col-span-5 relative">
+                    <div
+                        class="w-full h-56 sm:h-64 md:h-72 rounded-3xl overflow-hidden border border-white shadow-glass-hover relative bg-gradient-to-tr from-surface-container via-white to-surface-container group">
+                        <img id="heroVehicleImg"
+                            src="assets/images/mahindra_xuv700.jpg"
+                            alt="Mahindra XUV700 AX7 L"
+                            class="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700" />
+
+                        <!-- Top Floating Telemetry Pills -->
+                        <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                            <div
+                                class="bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white flex items-center gap-1 border border-white/20">
+                                <span class="material-symbols-outlined text-xs text-primary-fixed">verified</span>
+                                <span>VAHAN Verified RC</span>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Floating Diagnostics Badge -->
+                        <div
+                            class="absolute bottom-3 inset-x-3 bg-black/70 backdrop-blur-md p-2.5 rounded-2xl text-[11px] text-white flex items-center justify-between border border-white/20">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                <span class="font-medium">ECU Diagnostics: <strong>All Systems Normal</strong></span>
+                            </div>
+                            <span class="font-mono text-primary-fixed font-bold text-xs"
+                                id="heroChassisBadge">MA1TA...2024</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SECTION 3: ENROLLED INDIAN FLEET SWITCHER (INTERACTIVE HORIZONTAL CAROUSEL) -->
+        <section aria-label="Enrolled Indian Fleet" class="relative">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-xl">directions_car</span>
+                    </div>
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-on-surface flex items-center gap-2">
+                            <span>Enrolled Indian Fleet</span>
+                            <span id="fleetScrollCounterBadge" class="text-[10px] font-mono font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full hidden sm:inline-block">Swipe / Scroll</span>
+                        </h2>
+                        <p class="text-[11px] text-secondary">Click any vehicle to switch active telemetry</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <!-- Carousel Navigation Controls -->
+                    <div class="flex items-center gap-1 bg-surface-container/70 p-1 rounded-full border border-outline-variant/30 shadow-xs">
+                        <button type="button" onclick="scrollFleetCards('left')" aria-label="Scroll left"
+                            class="w-7 h-7 rounded-full bg-white hover:bg-primary hover:text-white text-slate-700 flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95">
+                            <span class="material-symbols-outlined text-base">chevron_left</span>
+                        </button>
+                        <button type="button" onclick="scrollFleetCards('right')" aria-label="Scroll right"
+                            class="w-7 h-7 rounded-full bg-white hover:bg-primary hover:text-white text-slate-700 flex items-center justify-center transition-all shadow-xs cursor-pointer active:scale-95">
+                            <span class="material-symbols-outlined text-base">chevron_right</span>
+                        </button>
+                    </div>
+
+                    <button onclick="openEnrollVehicleModal()"
+                        class="text-xs font-extrabold text-primary hover:text-primary-dark flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">add_circle</span>
+                        <span>Enroll Vehicle</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Track with subtle edge indicators -->
+            <div class="relative fleet-scroll-track">
+                <div class="flex items-stretch gap-3.5 sm:gap-4 overflow-x-auto scroll-smooth no-scrollbar py-2 px-1 snap-x snap-mandatory cursor-grab active:cursor-grabbing select-none" id="fleetCardsContainer">
+
+                    <!-- Vehicle Card 1: Mahindra XUV700 -->
+                    <div id="card-IND-MH12-XUV700"
+                        class="glass-panel rounded-2xl p-4 border-2 border-primary bg-primary/5 cursor-pointer transition-all hover:shadow-glass-hover relative overflow-hidden flex-none w-[285px] sm:w-[325px] snap-start"
+                        onclick="switchActiveVehicle('IND-MH12-XUV700')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span
+                                    class="text-[10px] font-extrabold text-primary bg-primary/15 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Active
+                                    Fleet</span>
+                                <h3 class="font-bold text-sm sm:text-base text-on-surface mt-1">Mahindra XUV700 AX7 L</h3>
+                                <p class="text-[11px] text-on-surface-variant font-mono mt-0.5">MH 12 RN 2024 • Diesel 2.2L
+                                </p>
+                            </div>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-dot"></span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-outline-variant/30 flex justify-between items-center text-xs">
+                            <span class="text-on-surface-variant">Fuel: <strong class="text-primary font-bold">78%</strong>
+                                (46.8 L)</span>
+                            <span class="text-error font-extrabold bg-error-container/40 px-2 py-0.5 rounded-full">Due in
+                                680 km</span>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Card 2: Tata Nexon EV -->
+                    <div id="card-IND-KA01-NEXON-EV"
+                        class="glass-panel rounded-2xl p-4 border-2 border-transparent bg-white/85 hover:bg-white cursor-pointer transition-all hover:shadow-glass-hover relative overflow-hidden flex-none w-[285px] sm:w-[325px] snap-start"
+                        onclick="switchActiveVehicle('IND-KA01-NEXON-EV')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span
+                                    class="text-[10px] font-extrabold text-teal-800 bg-teal-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Standby
+                                    EV</span>
+                                <h3 class="font-bold text-sm sm:text-base text-on-surface mt-1">Tata Nexon EV Empowered+
+                                </h3>
+                                <p class="text-[11px] text-on-surface-variant font-mono mt-0.5">KA 01 EQ 4050 • Electric
+                                    40.5 kWh</p>
+                            </div>
+                            <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-outline-variant/30 flex justify-between items-center text-xs">
+                            <span class="text-on-surface-variant">Charge: <strong
+                                    class="text-teal-700 font-bold">84%</strong> (34 kWh)</span>
+                            <span class="text-emerald-700 font-extrabold bg-emerald-100 px-2 py-0.5 rounded-full">385 km
+                                Range</span>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Card 3: Mahindra Thar 4x4 -->
+                    <div id="card-IND-DL08-THAR-4X4"
+                        class="glass-panel rounded-2xl p-4 border-2 border-transparent bg-white/85 hover:bg-white cursor-pointer transition-all hover:shadow-glass-hover relative overflow-hidden flex-none w-[285px] sm:w-[325px] snap-start"
+                        onclick="switchActiveVehicle('IND-DL08-THAR-4X4')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span
+                                    class="text-[10px] font-extrabold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Trail
+                                    Ready</span>
+                                <h3 class="font-bold text-sm sm:text-base text-on-surface mt-1">Mahindra Thar 4x4 MT</h3>
+                                <p class="text-[11px] text-on-surface-variant font-mono mt-0.5">DL 08 CA 7788 • Diesel 130
+                                </p>
+                            </div>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-outline-variant/30 flex justify-between items-center text-xs">
+                            <span class="text-on-surface-variant">Fuel: <strong class="text-primary font-bold">62%</strong>
+                                (35.3 L)</span>
+                            <span class="text-amber-700 font-extrabold bg-amber-100 px-2 py-0.5 rounded-full">Due in 350
+                                km</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: TACTILE QUICK ACTION PODS -->
+        <section aria-label="Quick Action Hub">
+            <h3 class="text-sm font-bold text-on-surface mb-3 flex items-center gap-2 px-1">
+                <span class="material-symbols-outlined text-primary text-xl">hub</span>
+                <span>Fleet Telemetry Workflows</span>
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+
+                <!-- Tile 1: Fuel / Energy Receipt -->
+                <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center gap-2.5 text-primary mb-2">
+                            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl">local_gas_station</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-on-surface">Fuel / Energy Receipt</h4>
+                        </div>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Log petrol, diesel or EV fast
+                            charging invoice with station details and rate.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-outline-variant/30 flex items-center justify-between">
+                        <span class="text-xs font-mono font-bold text-on-surface">₹89.70 / L avg</span>
+                        <button onclick="openDriverLogModal(0)"
+                            class="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
+                            <span>Log Pump</span>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tile 2: Odometer Cluster Logbook -->
+                <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center gap-2.5 text-primary mb-2">
+                            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl">speed</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-on-surface">Odometer Logbook</h4>
+                        </div>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Record instrument cluster reading to
+                            calibrate service alerts and true mileage.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-outline-variant/30 flex items-center justify-between">
+                        <span class="text-xs font-mono font-bold text-on-surface" id="cardOdoReading">14,820 km</span>
+                        <button onclick="openDriverLogModal(1)"
+                            class="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
+                            <span>Update Km</span>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tile 3: Service Bay Booking -->
+                <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center gap-2.5 text-primary mb-2">
+                            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl">build_circle</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-on-surface">Service Bay Booking</h4>
+                        </div>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Authorized service centers in Mumbai,
+                            Bengaluru, Delhi NCR and Pune.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-outline-variant/30 flex items-center justify-between">
+                        <span class="text-xs font-bold text-error font-mono">Service in 680 km</span>
+                        <a href="service.html"
+                            class="text-xs font-bold text-primary hover:underline flex items-center gap-1">
+                            <span>Book Bay</span>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Tile 4: NETC FASTag Pass -->
+                <div class="glass-panel rounded-2xl p-4 flex flex-col justify-between group">
+                    <div>
+                        <div class="flex items-center gap-2.5 text-primary mb-2">
+                            <div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                <span class="material-symbols-outlined text-xl">toll</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-on-surface">NETC FASTag Pass</h4>
+                        </div>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Automated highway toll plaza
+                            clearance across all Indian expressways.</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-outline-variant/30 flex items-center justify-between">
+                        <span class="text-xs font-mono font-bold text-on-surface" id="cardFastTagBal">₹3,450.00</span>
+                        <button onclick="openWalletModal()"
+                            class="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer">
+                            <span>UPI Recharge</span>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- NATIVE MOBILE FLOATING BOTTOM DOCK (< 768px) -->
+    <nav
+        class="fixed bottom-3 inset-x-3 z-40 mobile-floating-nav rounded-full py-2 px-3 md:hidden flex justify-around items-center shadow-glass safe-area-pb">
+        <a href="index.html"
+            class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-bold text-white bg-gradient-to-r from-primary-container to-primary rounded-full px-3 py-1 shadow-xs">
+            <span class="material-symbols-outlined text-lg">directions_car</span>
+            <span>Garage</span>
+        </a>
+        <a href="service.html"
+            class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold text-secondary hover:text-primary px-2 py-1">
+            <span class="material-symbols-outlined text-lg">build_circle</span>
+            <span>Services</span>
+        </a>
+        <a href="fuel_odo.html"
+            class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold text-secondary hover:text-primary px-2 py-1">
+            <span class="material-symbols-outlined text-lg">local_gas_station</span>
+            <span>Fuel</span>
+        </a>
+        <a href="fasttag.html"
+            class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold text-secondary hover:text-primary px-2 py-1">
+            <span class="material-symbols-outlined text-lg">toll</span>
+            <span>FASTag</span>
+        </a>
+        <a href="qr_contact.html"
+            class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold text-secondary hover:text-primary px-2 py-1">
+            <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
+            <span>QR Tag</span>
+        </a>
+    </nav>
+
+    <!-- SVG GRADIENT DEFINITIONS -->
+    <svg class="absolute w-0 h-0 pointer-events-none" aria-hidden="true" focusable="false">
+        <defs>
+            <linearGradient id="tealGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2bb5b2" />
+                <stop offset="100%" stop-color="#006a68" />
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- ==================== MODALS & DRAWERS ==================== -->
+
+    <!-- 1. DRIVER LOG MODAL (FUEL + ODOMETER) -->
+    <div id="driverLogModal"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-modal border border-white text-left max-h-[90vh] overflow-y-auto">
+            <div class="w-12 h-1 bg-outline-variant/60 rounded-full mx-auto mb-3 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">edit_note</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-on-surface">Driver Logbook Entry</h3>
+                        <p class="text-[11px] text-secondary">Indian Fleet Telemetry Sync</p>
+                    </div>
+                </div>
+                <button onclick="closeDriverLogModal()"
+                    class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary cursor-pointer hover:bg-surface-variant">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <div class="flex p-1 bg-surface-container/70 rounded-full mb-4 border border-outline-variant/30">
+                <button id="modalTabFuel" onclick="switchLogModalTab(0)"
+                    class="flex-1 py-1.5 text-xs font-bold rounded-full text-white bg-primary transition-all">
+                    Fuel Fill-up
+                </button>
+                <button id="modalTabOdo" onclick="switchLogModalTab(1)"
+                    class="flex-1 py-1.5 text-xs font-semibold rounded-full text-secondary hover:text-on-surface transition-all">
+                    Odometer Update
+                </button>
+            </div>
+
+            <form id="formFuelLog" onsubmit="submitFuelLog(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Target Vehicle</label>
+                    <input type="text" id="logFuelVehicleName" readonly
+                        class="w-full bg-surface-container/70 rounded-xl p-2.5 text-xs font-bold text-on-surface border border-outline-variant/30" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Litres
+                            Filled</label>
+                        <input type="number" id="inputFuelLitres" step="0.1" required placeholder="35.0"
+                            class="w-full rounded-xl p-2.5 text-xs text-on-surface border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Rate / Litre
+                            (₹)</label>
+                        <input type="number" id="inputFuelPrice" step="0.1" required value="89.70"
+                            class="w-full rounded-xl p-2.5 text-xs text-on-surface border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Station /
+                        Vendor</label>
+                    <input type="text" id="inputFuelStation" placeholder="Indian Oil / BPCL / HPCL / Shell"
+                        class="w-full rounded-xl p-2.5 text-xs text-on-surface border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary" />
+                </div>
+                <div>
+                    <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Odometer at Fill-up
+                        (km)</label>
+                    <input type="number" id="inputFuelOdo" required placeholder="14850"
+                        class="w-full rounded-xl p-2.5 text-xs text-on-surface border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary" />
+                </div>
+                <button type="submit"
+                    class="btn-primary-glow w-full text-white text-xs font-bold py-3.5 rounded-xl mt-2 cursor-pointer shadow-md">
+                    Commit Fuel Record
+                </button>
+            </form>
+
+            <form id="formOdoLog" onsubmit="submitOdoLog(event)" class="space-y-3.5 hidden">
+                <div>
+                    <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Target Vehicle</label>
+                    <input type="text" id="logOdoVehicleName" readonly
+                        class="w-full bg-surface-container/70 rounded-xl p-2.5 text-xs font-bold text-on-surface border border-outline-variant/30" />
+                </div>
+                <div>
+                    <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Current Cluster
+                        Reading (km)</label>
+                    <input type="number" id="inputNewOdo" required placeholder="15100"
+                        class="w-full rounded-xl p-2.5 text-xs text-on-surface border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary" />
+                </div>
+                <div>
+                    <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Driver Notes /
+                        Route</label>
+                    <input type="text" id="inputOdoNotes" placeholder="e.g. Pune - Mumbai Expressway Trip"
+                        class="w-full rounded-xl p-2.5 text-xs text-on-surface border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary" />
+                </div>
+                <button type="submit"
+                    class="btn-primary-glow w-full text-white text-xs font-bold py-3.5 rounded-xl mt-2 cursor-pointer shadow-md">
+                    Update Verified Reading
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. FASTTAG WALLET TOP-UP MODAL -->
+    <div id="walletModal"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-modal border border-white text-left max-h-[90vh] overflow-y-auto">
+            <div class="w-12 h-1 bg-outline-variant/60 rounded-full mx-auto mb-3 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">toll</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-on-surface">NETC FastTag Instant Recharge</h3>
+                        <p class="text-[11px] text-secondary">National Electronic Toll Collection (UPI)</p>
+                    </div>
+                </div>
+                <button onclick="closeWalletModal()"
+                    class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary cursor-pointer hover:bg-surface-variant">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <div
+                class="bg-gradient-to-br from-primary-dark via-primary to-primary-container p-4 rounded-2xl text-white shadow-md mb-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] uppercase font-bold tracking-wider text-white/80">Linked Vehicle</p>
+                        <p class="text-sm font-bold font-mono" id="walletLinkedPlate">MH 12 RN 2024</p>
+                    </div>
+                    <span class="text-xs font-bold bg-white/20 px-2 py-0.5 rounded-full">ICICI FASTag</span>
+                </div>
+                <div class="mt-4 flex justify-between items-end">
+                    <div>
+                        <p class="text-[10px] text-white/80">Available Wallet Balance</p>
+                        <p class="text-2xl font-extrabold font-headline" id="modalWalletBalance">₹3,450.00</p>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-300 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span> Active
+                    </span>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-[11px] font-extrabold text-secondary uppercase">Quick Top-Up Amount</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="selectTopupAmount(500)"
+                        class="py-2 rounded-xl border border-outline-variant/50 text-xs font-bold hover:border-primary hover:bg-primary/5 transition-all">₹500</button>
+                    <button type="button" onclick="selectTopupAmount(1000)"
+                        class="py-2 rounded-xl border border-outline-variant/50 text-xs font-bold hover:border-primary hover:bg-primary/5 transition-all">₹1,000</button>
+                    <button type="button" onclick="selectTopupAmount(2000)"
+                        class="py-2 rounded-xl border border-outline-variant/50 text-xs font-bold hover:border-primary hover:bg-primary/5 transition-all">₹2,000</button>
+                </div>
+                <div>
+                    <label class="block text-[11px] font-extrabold text-secondary uppercase mb-1">Custom Amount
+                        (₹)</label>
+                    <input type="number" id="inputCustomTopup" value="1000"
+                        class="w-full rounded-xl p-2.5 text-xs text-on-surface border border-outline-variant/50 font-bold focus:border-primary focus:ring-1 focus:ring-primary" />
+                </div>
+                <button type="button" onclick="handleWalletTopup()"
+                    class="btn-primary-glow w-full text-white text-xs font-bold py-3.5 rounded-xl cursor-pointer shadow-md mt-2 flex items-center justify-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm">account_balance_wallet</span>
+                    <span id="btnTopupText">Top-Up ₹1,000 via UPI</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ENROLL VEHICLE MODAL -->
+    <div id="enrollModal"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-100 text-left max-h-[92vh] overflow-y-auto">
+            <div class="w-12 h-1 bg-outline-variant/60 rounded-full mx-auto mb-3 sm:hidden"></div>
+            
+            <!-- Modal Top Header -->
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-primary to-primary-container text-white flex items-center justify-center shadow-md shadow-primary/20">
+                        <span class="material-symbols-outlined text-2xl">directions_car</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-headline font-extrabold text-lg text-slate-900">Enroll Indian Car</h3>
+                            <span class="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                MoRTH VAHAN 4.0
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500">Instant HSRP plate verification & FASTag linking</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeEnrollVehicleModal()"
+                    class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-200 transition-colors">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+
+            <!-- Photorealistic Live HSRP Plate Preview -->
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-1.5 px-0.5">
+                    <span class="text-[10px] font-extrabold tracking-wider text-slate-400 uppercase font-headline">Live HSRP Preview</span>
+                    <span id="hsrpStateBadge" class="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Maharashtra (MH)</span>
+                </div>
+
+                <!-- Embossed Metal HSRP Plate -->
+                <div class="relative bg-gradient-to-b from-white via-slate-50 to-slate-200 p-2 sm:p-2.5 rounded-xl border-2 border-slate-800 shadow-md flex items-center gap-3 overflow-hidden select-none">
+                    <!-- Left Blue IND Bar with Ashoka Chakra & Hologram -->
+                    <div class="bg-gradient-to-b from-[#003399] to-[#002266] rounded-md px-2 py-2 flex flex-col items-center justify-between text-white shrink-0 self-stretch min-h-[46px] shadow-xs">
+                        <div class="w-3.5 h-3.5 rounded-full border border-amber-300/80 flex items-center justify-center bg-amber-400/20" title="Chromium Hologram">
+                            <span class="text-[7px] font-bold text-amber-200">★</span>
+                        </div>
+                        <span class="text-[11px] font-extrabold tracking-wider font-mono">IND</span>
+                    </div>
+
+                    <!-- Plate Number Live Display -->
+                    <div class="flex-1 text-center font-mono">
+                        <div id="hsrpLiveNumber" class="text-xl sm:text-2xl font-black tracking-widest text-slate-900 uppercase drop-shadow-xs">
+                            MH 14 JM 8899
+                        </div>
+                        <div class="text-[8px] tracking-widest font-mono text-slate-400 mt-0.5 flex items-center justify-center gap-2">
+                            <span>HSRP 2026-BHARAT</span>
+                            <span>•</span>
+                            <span id="hsrpLaserCode">IN90827341</span>
+                        </div>
+                    </div>
+
+                    <!-- Right Security Screws / Hologram simulation -->
+                    <div class="w-3 h-3 rounded-full bg-slate-400/60 border border-slate-600/40 shrink-0 flex items-center justify-center text-[7px] text-slate-700">
+                        +
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indian Car Model Quick Presets -->
+            <div class="mb-4">
+                <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1.5 font-headline">Popular Indian Models (1-Tap Select)</label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    <button type="button" onclick="selectModelPreset('Mahindra Scorpio-N Z8 L', 'Diesel', 57, 'assets/images/mahindra_xuv700.jpg')"
+                        class="text-left p-2 rounded-xl border border-slate-200 hover:border-primary hover:bg-primary/5 transition-all text-xs font-semibold cursor-pointer group">
+                        <p class="font-bold text-slate-900 group-hover:text-primary text-[11px] truncate">Scorpio-N Z8 L</p>
+                        <p class="text-[10px] text-slate-500 font-normal">Diesel 4XPLOR • 57L</p>
+                    </button>
+                    <button type="button" onclick="selectModelPreset('Tata Safari Dark Edition', 'Diesel', 50, 'assets/images/mahindra_xuv700.jpg')"
+                        class="text-left p-2 rounded-xl border border-slate-200 hover:border-primary hover:bg-primary/5 transition-all text-xs font-semibold cursor-pointer group">
+                        <p class="font-bold text-slate-900 group-hover:text-primary text-[11px] truncate">Tata Safari Dark</p>
+                        <p class="text-[10px] text-slate-500 font-normal">Kryotec 2.0L • 50L</p>
+                    </button>
+                    <button type="button" onclick="selectModelPreset('Tata Harrier Fearless+', 'Diesel', 50, 'assets/images/mahindra_xuv700.jpg')"
+                        class="text-left p-2 rounded-xl border border-slate-200 hover:border-primary hover:bg-primary/5 transition-all text-xs font-semibold cursor-pointer group">
+                        <p class="font-bold text-slate-900 group-hover:text-primary text-[11px] truncate">Tata Harrier</p>
+                        <p class="text-[10px] text-slate-500 font-normal">Fearless+ • 50L</p>
+                    </button>
+                    <button type="button" onclick="selectModelPreset('Hyundai Creta SX(O)', 'Petrol', 50, 'assets/images/mahindra_xuv700.jpg')"
+                        class="text-left p-2 rounded-xl border border-slate-200 hover:border-primary hover:bg-primary/5 transition-all text-xs font-semibold cursor-pointer group">
+                        <p class="font-bold text-slate-900 group-hover:text-primary text-[11px] truncate">Hyundai Creta</p>
+                        <p class="text-[10px] text-slate-500 font-normal">1.5L Turbo • 50L</p>
+                    </button>
+                    <button type="button" onclick="selectModelPreset('Toyota Fortuner Legender', 'Diesel', 80, 'assets/images/mahindra_thar.jpg')"
+                        class="text-left p-2 rounded-xl border border-slate-200 hover:border-primary hover:bg-primary/5 transition-all text-xs font-semibold cursor-pointer group">
+                        <p class="font-bold text-slate-900 group-hover:text-primary text-[11px] truncate">Fortuner Legender</p>
+                        <p class="text-[10px] text-slate-500 font-normal">Diesel 4x4 • 80L</p>
+                    </button>
+                    <button type="button" onclick="selectModelPreset('Tata Nexon EV Empowered', 'Electric', 40.5, 'assets/images/tata_nexon_ev.jpg')"
+                        class="text-left p-2 rounded-xl border border-slate-200 hover:border-primary hover:bg-primary/5 transition-all text-xs font-semibold cursor-pointer group">
+                        <p class="font-bold text-slate-900 group-hover:text-primary text-[11px] truncate">Nexon EV</p>
+                        <p class="text-[10px] text-slate-500 font-normal">Electric • 40.5 kWh</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Enrollment Form -->
+            <form onsubmit="handleEnrollSubmit(event)" class="space-y-3">
+                <input type="hidden" id="enrollImageUrl" value="assets/images/mahindra_xuv700.jpg" />
+
+                <!-- Car Model Name Input -->
+                <div>
+                    <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 font-headline">Car Make & Model</label>
+                    <div class="relative">
+                        <input type="text" id="enrollModelSelect" required value="Mahindra Scorpio-N Z8 L"
+                            placeholder="e.g. Mahindra Scorpio-N Z8 L"
+                            class="w-full rounded-xl pl-3 pr-8 py-2.5 text-xs text-slate-900 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-semibold" />
+                        <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-slate-400 text-sm">directions_car</span>
+                    </div>
+                </div>
+
+                <!-- Registration Number with Live HSRP Formatting -->
+                <div>
+                    <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 font-headline">
+                        Registration Plate (HSRP)
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="enrollPlateInput" required value="MH 14 JM 8899"
+                            placeholder="e.g. MH 12 RN 2024"
+                            oninput="updateHsrpLivePreview(this.value)"
+                            class="w-full rounded-xl pl-3 pr-8 py-2.5 text-xs text-slate-900 uppercase border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono font-bold tracking-wider" />
+                        <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-slate-400 text-sm">badge</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[12px] text-primary">verified</span>
+                        Standard High Security Registration Plate format (State + RTO + Series + Number)
+                    </p>
+                </div>
+
+                <!-- Fuel Type & Capacity -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 font-headline">Fuel / Powertrain</label>
+                        <select id="enrollFuelType" onchange="onFuelTypeChange(this.value)"
+                            class="w-full rounded-xl px-3 py-2.5 text-xs text-slate-900 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white font-medium">
+                            <option value="Diesel">Diesel mHawk / Kryotec</option>
+                            <option value="Petrol">Petrol Turbo / mStallion</option>
+                            <option value="Electric">Electric (Lithium-ion)</option>
+                            <option value="CNG">CNG Bi-Fuel</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label id="enrollCapLabel" class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 font-headline">Tank (Litres)</label>
+                        <input type="number" id="enrollCapacity" value="57" min="10" max="150"
+                            class="w-full rounded-xl px-3 py-2.5 text-xs text-slate-900 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-bold" />
+                    </div>
+                </div>
+
+                <!-- FASTag Provider & Initial Odometer -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 font-headline">FASTag Provider</label>
+                        <select id="enrollFastagBank"
+                            class="w-full rounded-xl px-3 py-2.5 text-xs text-slate-900 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none bg-white font-medium">
+                            <option value="ICICI Bank FASTag">ICICI Bank FASTag</option>
+                            <option value="Paytm Payments FASTag">Paytm Payments FASTag</option>
+                            <option value="HDFC Bank FASTag">HDFC Bank FASTag</option>
+                            <option value="SBI FASTag">State Bank of India (SBI)</option>
+                            <option value="Axis Bank FASTag">Axis Bank FASTag</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 font-headline">Odometer (km)</label>
+                        <input type="number" id="enrollOdometer" value="2400" min="0" max="500000"
+                            class="w-full rounded-xl px-3 py-2.5 text-xs text-slate-900 border border-slate-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono font-bold" />
+                    </div>
+                </div>
+
+                <!-- Live Status & Submit Button -->
+                <div class="pt-2">
+                    <button type="submit" id="enrollSubmitBtn"
+                        class="btn-primary-glow w-full text-white text-xs font-bold py-3.5 rounded-xl cursor-pointer shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-base">verified</span>
+                        <span>Verify VAHAN & Add to Garage Fleet</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. DRIVER PROFILE MODAL -->
+    <div id="profileModal"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-modal border border-white text-left">
+            <div class="w-12 h-1 bg-outline-variant/60 rounded-full mx-auto mb-3 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-base text-on-surface">Driver Profile & Credentials</h3>
+                <button onclick="closeProfileModal()"
+                    class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+            <div
+                class="flex items-center gap-3 p-3.5 rounded-2xl bg-surface-container/70 mb-4 border border-outline-variant/30">
+                <div
+                    class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary-dark to-primary text-white flex items-center justify-center font-bold text-base font-headline shadow-sm">
+                    VS
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm text-on-surface" id="modalDriverName">Vikramaditya Sharma</h4>
+                    <p class="text-xs text-secondary" id="modalDriverPhone">+91 98765 43210</p>
+                    <span
+                        class="text-[10px] text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded-full mt-1 inline-block">VAHAN
+                        Verified Driver</span>
+                </div>
+            </div>
+            <div class="space-y-2 text-xs text-secondary">
+                <div class="flex justify-between py-2 border-b border-outline-variant/30">
+                    <span>Driving License:</span>
+                    <strong class="text-on-surface font-mono">DL-14202100984</strong>
+                </div>
+                <div class="flex justify-between py-2 border-b border-outline-variant/30">
+                    <span>VAHAN State RTO:</span>
+                    <strong class="text-on-surface">Maharashtra (MH-12 Pune)</strong>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span>Primary Service Center:</span>
+                    <strong class="text-primary font-bold">Worli Tech Hub, Mumbai</strong>
+                </div>
+            </div>
+            <a href="login.html"
+                class="mt-5 w-full block text-center py-2.5 rounded-xl border border-error/30 text-error text-xs font-bold hover:bg-error/10 transition-colors">
+                Sign Out / Switch Phone Number
+            </a>
+        </div>
+    </div>
+
+    <!-- 5. NOTIFICATIONS MODAL -->
+    <div id="notificationsModal"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 modal-backdrop opacity-0 pointer-events-none transition-all duration-300">
+        <div
+            class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-modal border border-white text-left max-h-[85vh] overflow-y-auto">
+            <div class="w-12 h-1 bg-outline-variant/60 rounded-full mx-auto mb-3 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-base text-on-surface">Fleet Telemetry Alerts</h3>
+                <button onclick="closeNotificationsModal()"
+                    class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+            <div class="space-y-2.5 text-xs">
+                <div class="p-3 rounded-2xl bg-primary/5 border border-primary/20 flex gap-3 items-start">
+                    <div
+                        class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-lg">build</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-on-surface">Service Bay Scheduled</p>
+                        <p class="text-secondary text-[11px] mt-0.5">Mahindra XUV700 booked for Sep 05 at Mumbai Worli
+                            Center.</p>
+                    </div>
+                </div>
+                <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex gap-3 items-start">
+                    <div
+                        class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-lg">toll</span>
+                    </div>
+                    <div>
+                        <p class="font-bold text-on-surface">FASTag Toll Cleared</p>
+                        <p class="text-secondary text-[11px] mt-0.5">₹110 debited at Khalapur Toll Plaza (Mumbai-Pune
+                            Expressway).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toastNotification"
+        class="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-3 bg-[#112020] text-white px-4 py-3 rounded-2xl shadow-xl border border-white/15">
+        <span class="material-symbols-outlined text-accent-electric text-xl">check_circle</span>
+        <div>
+            <p id="toastTitle" class="text-xs font-bold">Action Completed</p>
+            <p id="toastDesc" class="text-[11px] text-white/70">Operation executed successfully.</p>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT STATE & HANDLERS ==================== -->
+    <script>
+        let activeVin = 'IND-MH12-XUV700';
+        let fastTagBalance = 3450.00;
+
+        const vehiclesDB = {
+            'IND-MH12-XUV700': {
+                name: 'Mahindra XUV700 AX7 L',
+                plate: 'MH 12 RN 2024',
+                chassis: 'MA1TA...2024',
+                subtitle: 'All-Wheel Drive • AdrenoX Telemetry Active • mHawk 185 PS',
+                fuelType: 'Diesel • mHawk 2.2L',
+                tankLabel: 'Diesel Tank Level',
+                fuelPercent: 78.0,
+                fuelLitres: 46.8,
+                capacityLitres: 60.0,
+                rangeKm: 620,
+                odometerKm: 14820,
+                serviceDueKm: 680,
+                img: 'assets/images/mahindra_xuv700.jpg'
+            },
+            'IND-KA01-NEXON-EV': {
+                name: 'Tata Nexon EV Empowered+',
+                plate: 'KA 01 EQ 4050',
+                chassis: 'MATAT...4050',
+                subtitle: 'ZConnect Connected EV • Permanent Magnet AC Motor • 142 bhp',
+                fuelType: 'Electric • 40.5 kWh LFP',
+                tankLabel: 'EV Battery State of Charge',
+                fuelPercent: 84.0,
+                fuelLitres: 34.0,
+                capacityLitres: 40.5,
+                rangeKm: 385,
+                odometerKm: 9450,
+                serviceDueKm: 3200,
+                img: 'assets/images/tata_nexon_ev.jpg'
+            },
+            'IND-DL08-THAR-4X4': {
+                name: 'Mahindra Thar 4x4 MT',
+                plate: 'DL 08 CA 7788',
+                chassis: 'MA1TH...7788',
+                subtitle: 'Earth Edition Hard Top • Shift-on-the-Fly 4x4 • Trail Ready',
+                fuelType: 'Diesel • mHawk 130',
+                tankLabel: 'Fuel Tank Level',
+                fuelPercent: 62.0,
+                fuelLitres: 35.3,
+                capacityLitres: 57.0,
+                rangeKm: 430,
+                odometerKm: 21300,
+                serviceDueKm: 350,
+                img: 'assets/images/mahindra_thar.jpg'
+            }
+        };
+        window.vehiclesDB = vehiclesDB;
+
+        function ensureIndexVehicleEntry(vin) {
+            if (vehiclesDB[vin]) return vehiclesDB[vin];
+            let name = 'Indian Passenger Vehicle';
+            let plate = vin.replace('IND-', '').replace(/-/g, ' ');
+            let fuel = 'Diesel';
+            let cap = 55.0;
+            let odo = 12400;
+            let img = 'assets/images/mahindra_xuv700.jpg';
+            let bank = 'SBI FASTag';
+            try {
+                const fleet = JSON.parse(localStorage.getItem('motoro_fleet') || '[]');
+                const found = fleet.find(c => c.vin === vin);
+                if (found) {
+                    name = found.name || name;
+                    plate = found.plate || plate;
+                    fuel = found.fuel_type || fuel;
+                    cap = parseFloat(found.tank_capacity_l || found.fuel_capacity_litres || cap);
+                    odo = parseInt(found.odometer_km || odo);
+                    img = found.image_url || img;
+                    bank = found.fastag_bank || bank;
+                }
+            } catch (_) {}
+            const isEv = (fuel.toLowerCase().includes('electric') || fuel.toLowerCase().includes('ev'));
+            vehiclesDB[vin] = {
+                name: name,
+                plate: plate,
+                chassis: 'IND...' + vin.slice(-4),
+                subtitle: 'Enrolled Indian Fleet • Telemetry Active',
+                fuelType: fuel,
+                tankLabel: isEv ? 'EV Battery SoC' : 'Fuel Tank Level',
+                fuelPercent: 80.0,
+                fuelLitres: Number((cap * 0.8).toFixed(1)),
+                capacityLitres: cap,
+                rangeKm: isEv ? 380 : 580,
+                odometerKm: odo,
+                serviceDueKm: 1800,
+                img: img,
+                fuel: fuel,
+                bank: bank,
+                bal: 1500.00,
+                odo: odo
+            };
+            return vehiclesDB[vin];
+        }
+        window.ensureIndexVehicleEntry = ensureIndexVehicleEntry;
+
+        function renderIndexFleetCards() {
+            const container = document.getElementById('fleetCardsContainer');
+            if (!container) return;
+
+            try {
+                const stored = localStorage.getItem('motoro_fleet');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(c => ensureIndexVehicleEntry(c.vin));
+                    }
+                }
+            } catch (_) {}
+
+            const keys = Object.keys(vehiclesDB);
+            if (keys.length === 0) return;
+
+            let html = '';
+            keys.forEach(vKey => {
+                const car = vehiclesDB[vKey];
+                const isSelected = (vKey === activeVin);
+                const isEv = (car.fuelType && (car.fuelType.toLowerCase().includes('electric') || car.fuelType.toLowerCase().includes('ev')));
+                
+                let badgeText = isSelected ? 'Active Fleet' : (isEv ? 'Standby EV' : 'In Fleet');
+                let badgeClass = isSelected ? 'text-primary bg-primary/15' : (isEv ? 'text-teal-800 bg-teal-100' : 'text-slate-700 bg-slate-100');
+                let pulseDot = isSelected ? '<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-dot"></span>' : (isEv ? '<span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>' : '<span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>');
+                let cardClass = isSelected 
+                    ? "glass-panel rounded-2xl p-4 border-2 border-primary bg-primary/5 cursor-pointer transition-all hover:shadow-glass-hover relative overflow-hidden flex-none w-[285px] sm:w-[325px] snap-start shadow-sm"
+                    : "glass-panel rounded-2xl p-4 border-2 border-transparent bg-white/85 hover:bg-white cursor-pointer transition-all hover:shadow-glass-hover relative overflow-hidden flex-none w-[285px] sm:w-[325px] snap-start shadow-sm";
+
+                const fuelUnit = isEv ? 'kWh' : 'L';
+                const fuelLabel = isEv ? 'Charge' : 'Fuel';
+                const cap = car.capacityLitres || 50;
+                const litres = (car.fuelLitres || (cap * (car.fuelPercent || 80) / 100)).toFixed(1);
+                const percent = Math.round(car.fuelPercent || 80);
+                const dueText = car.serviceDueKm ? `Due in ${car.serviceDueKm.toLocaleString()} km` : `${car.rangeKm || 450} km Range`;
+                const dueClass = (car.serviceDueKm && car.serviceDueKm < 1000) ? 'text-error font-extrabold bg-error-container/40' : 'text-emerald-700 font-extrabold bg-emerald-100';
+
+                html += `
+                    <div id="card-${vKey}"
+                        class="${cardClass}"
+                        onclick="switchActiveVehicle('${vKey}')">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${badgeClass}">${badgeText}</span>
+                                <h3 class="font-bold text-sm sm:text-base text-on-surface mt-1 truncate max-w-[210px] sm:max-w-[240px]">${car.name}</h3>
+                                <p class="text-[11px] text-on-surface-variant font-mono mt-0.5">${car.plate} &bull; ${car.fuelType}</p>
+                            </div>
+                            ${pulseDot}
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-outline-variant/30 flex justify-between items-center text-xs">
+                            <span class="text-on-surface-variant">${fuelLabel}: <strong class="text-primary font-bold">${percent}%</strong> (${litres} ${fuelUnit})</span>
+                            <span class="px-2 py-0.5 rounded-full ${dueClass}">${dueText}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            const counterBadge = document.getElementById('fleetScrollCounterBadge');
+            if (counterBadge) {
+                counterBadge.textContent = `${keys.length} Connected • Swipe / Scroll`;
+            }
+
+            initFleetCardsDragScroll();
+        }
+        window.renderIndexFleetCards = renderIndexFleetCards;
+
+        function scrollFleetCards(dir) {
+            const container = document.getElementById('fleetCardsContainer');
+            if (!container) return;
+            const scrollAmount = 340;
+            container.scrollBy({
+                left: dir === 'left' ? -scrollAmount : scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+        window.scrollFleetCards = scrollFleetCards;
+
+        function initFleetCardsDragScroll() {
+            const slider = document.getElementById('fleetCardsContainer');
+            if (!slider || slider.dataset.dragInitialized) return;
+            slider.dataset.dragInitialized = 'true';
+
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            let hasDragged = false;
+
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                hasDragged = false;
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+            });
+
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+            });
+
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 1.4;
+                if (Math.abs(walk) > 5) hasDragged = true;
+                slider.scrollLeft = scrollLeft - walk;
+            });
+
+            slider.addEventListener('click', (e) => {
+                if (hasDragged) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            }, true);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const storedPhone = sessionStorage.getItem('motoro_driver_phone');
+            const storedName = sessionStorage.getItem('motoro_operator_name');
+            if (storedPhone) {
+                const formatted = `+91 ${storedPhone.slice(-10, -5)} ${storedPhone.slice(-5)}`;
+                document.getElementById('headerDriverPhone').textContent = formatted;
+                document.getElementById('modalDriverPhone').textContent = formatted;
+            }
+            if (storedName) {
+                document.getElementById('headerDriverName').textContent = storedName;
+                document.getElementById('modalDriverName').textContent = storedName;
+            }
+
+            try {
+                const stored = localStorage.getItem('motoro_fleet');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(c => ensureIndexVehicleEntry(c.vin));
+                    }
+                }
+            } catch (_) {}
+
+            const initialVin = localStorage.getItem('motoro_active_vin') || sessionStorage.getItem('motoro_active_vin') || 'IND-MH12-XUV700';
+            ensureIndexVehicleEntry(initialVin);
+            switchActiveVehicle(initialVin);
+            renderIndexFleetCards();
+        });
+
+        window.addEventListener('motoro:fleetUpdated', () => {
+            renderIndexFleetCards();
+        });
+
+        function toggleVehicleDropdown() {
+            const menu = document.getElementById('vehicleDropdownMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const btn = document.getElementById('vehicleDropdownBtn') || document.getElementById('vehicleSelectorBtn');
+            const menu = document.getElementById('vehicleDropdownMenu');
+            if (btn && menu && !btn.contains(e.target) && !menu.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        function changeVehicle(vin) {
+            switchActiveVehicle(vin);
+        }
+
+        window.onVehicleChanged = function(vin) {
+            switchActiveVehicle(vin);
+        };
+
+        function switchActiveVehicle(vin) {
+            ensureIndexVehicleEntry(vin);
+            if (!vehiclesDB[vin]) vin = 'IND-MH12-XUV700';
+            activeVin = vin;
+            localStorage.setItem('motoro_active_vin', vin);
+            sessionStorage.setItem('motoro_active_vin', vin);
+            const car = vehiclesDB[vin];
+            if (!car) return;
+
+            renderIndexFleetCards();
+
+            // Smoothly scroll active card into view
+            setTimeout(() => {
+                const activeCard = document.getElementById(`card-${vin}`);
+                if (activeCard) {
+                    activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }, 60);
+
+            if (document.getElementById('selectedVehicleLabel')) {
+                document.getElementById('selectedVehicleLabel').textContent = car.plate;
+            }
+
+            // Update Header labels if present
+            if (document.getElementById('headerVehicleName')) {
+                document.getElementById('headerVehicleName').textContent = car.name.split(' ')[0] + ' ' + (car.name.split(' ')[1] || '');
+            }
+            if (document.getElementById('headerVinBadge')) {
+                document.getElementById('headerVinBadge').textContent = car.plate;
+            }
+
+            // Update Hero telemetry texts
+            if (document.getElementById('heroCarName')) document.getElementById('heroCarName').textContent = car.name;
+            if (document.getElementById('heroVinText')) document.getElementById('heroVinText').textContent = car.plate;
+            if (document.getElementById('heroCarSubtitle')) document.getElementById('heroCarSubtitle').textContent = car.subtitle;
+            if (document.getElementById('heroFuelType')) document.getElementById('heroFuelType').textContent = car.fuelType;
+            if (document.getElementById('heroTankLabel')) document.getElementById('heroTankLabel').textContent = car.tankLabel;
+            if (document.getElementById('heroChassisBadge')) {
+                document.getElementById('heroChassisBadge').textContent = car.chassis;
+            }
+
+            const unit = car.fuelType.includes('Electric') ? 'kWh' : 'Litres';
+            if (document.getElementById('heroFuelPercent')) {
+                document.getElementById('heroFuelPercent').textContent = `${car.fuelLitres.toFixed(1)} / ${car.capacityLitres.toFixed(1)} ${unit}`;
+            }
+            if (document.getElementById('heroGaugePercent')) {
+                document.getElementById('heroGaugePercent').textContent = `${car.fuelPercent}%`;
+            }
+            if (document.getElementById('heroFuelBar')) {
+                document.getElementById('heroFuelBar').style.width = `${car.fuelPercent}%`;
+            }
+
+            // Update Circular Gauge stroke-dashoffset (total circumference = 2 * PI * 26 ≈ 163.36)
+            if (document.getElementById('heroCircularProgress')) {
+                const circumference = 163.36;
+                const offset = circumference - (car.fuelPercent / 100) * circumference;
+                document.getElementById('heroCircularProgress').style.strokeDashoffset = offset;
+            }
+
+            if (document.getElementById('heroVehicleImg')) {
+                document.getElementById('heroVehicleImg').src = car.img;
+            }
+
+            if (document.getElementById('statActiveFuel')) {
+                document.getElementById('statActiveFuel').innerHTML = `${car.fuelPercent}% <span class="text-xs font-semibold text-secondary">(${car.fuelLitres.toFixed(0)} ${unit})</span>`;
+            }
+            if (document.getElementById('cardOdoReading')) {
+                document.getElementById('cardOdoReading').textContent = `${car.odometerKm.toLocaleString()} km`;
+            }
+            if (document.getElementById('walletLinkedPlate')) {
+                document.getElementById('walletLinkedPlate').textContent = car.plate;
+            }
+
+            if (document.getElementById('logFuelVehicleName')) {
+                document.getElementById('logFuelVehicleName').value = `${car.name} (${car.plate})`;
+            }
+            if (document.getElementById('logOdoVehicleName')) {
+                document.getElementById('logOdoVehicleName').value = `${car.name} (${car.plate})`;
+            }
+            if (document.getElementById('inputFuelOdo')) {
+                document.getElementById('inputFuelOdo').value = car.odometerKm;
+            }
+            if (document.getElementById('inputNewOdo')) {
+                document.getElementById('inputNewOdo').value = car.odometerKm + 50;
+            }
+
+            const menu = document.getElementById('vehicleDropdownMenu');
+            if (menu) menu.classList.add('hidden');
+
+            showToast('Active Vehicle Selected', `${car.name} (${car.plate}) telemetry active.`);
+        }
+
+        const driverLogModal = document.getElementById('driverLogModal');
+        const walletModal = document.getElementById('walletModal');
+        const enrollModal = document.getElementById('enrollModal');
+        const profileModal = document.getElementById('profileModal');
+        const notificationsModal = document.getElementById('notificationsModal');
+
+        function openDriverLogModal(tabIdx = 0) {
+            switchLogModalTab(tabIdx);
+            driverLogModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeDriverLogModal() {
+            driverLogModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function switchLogModalTab(tabIdx) {
+            const tabFuel = document.getElementById('modalTabFuel');
+            const tabOdo = document.getElementById('modalTabOdo');
+            const formFuel = document.getElementById('formFuelLog');
+            const formOdo = document.getElementById('formOdoLog');
+
+            if (tabIdx === 0) {
+                tabFuel.className = "flex-1 py-1.5 text-xs font-bold rounded-full text-white bg-primary transition-all";
+                tabOdo.className = "flex-1 py-1.5 text-xs font-semibold rounded-full text-secondary hover:text-on-surface transition-all";
+                formFuel.classList.remove('hidden');
+                formOdo.classList.add('hidden');
+            } else {
+                tabOdo.className = "flex-1 py-1.5 text-xs font-bold rounded-full text-white bg-primary transition-all";
+                tabFuel.className = "flex-1 py-1.5 text-xs font-semibold rounded-full text-secondary hover:text-on-surface transition-all";
+                formOdo.classList.remove('hidden');
+                formFuel.classList.add('hidden');
+            }
+        }
+
+        function openWalletModal() {
+            walletModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeWalletModal() {
+            walletModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function selectTopupAmount(amt) {
+            document.getElementById('inputCustomTopup').value = amt;
+            document.getElementById('btnTopupText').textContent = `Top-Up ₹${amt.toLocaleString()} via UPI`;
+        }
+
+        document.getElementById('inputCustomTopup').addEventListener('input', (e) => {
+            const val = e.target.value || 0;
+            document.getElementById('btnTopupText').textContent = `Top-Up ₹${Number(val).toLocaleString()} via UPI`;
+        });
+
+        function handleWalletTopup() {
+            const amt = parseFloat(document.getElementById('inputCustomTopup').value) || 0;
+            if (amt <= 0) return;
+
+            fastTagBalance += amt;
+            document.getElementById('statWalletBalance').textContent = `₹${fastTagBalance.toLocaleString()}`;
+            document.getElementById('modalWalletBalance').textContent = `₹${fastTagBalance.toLocaleString()}.00`;
+            document.getElementById('cardFastTagBal').textContent = `₹${fastTagBalance.toLocaleString()}.00`;
+
+            closeWalletModal();
+            showToast('FASTag Recharge Successful', `₹${amt.toLocaleString()} added via UPI. NETC status synced.`);
+        }
+
+        const INDIAN_STATES = {
+            'AN': 'Andaman & Nicobar', 'AP': 'Andhra Pradesh', 'AR': 'Arunachal Pradesh', 'AS': 'Assam',
+            'BR': 'Bihar', 'CG': 'Chhattisgarh', 'CH': 'Chandigarh', 'DD': 'Daman & Diu', 'DL': 'Delhi NCR',
+            'DN': 'Dadra & Nagar', 'GA': 'Goa', 'GJ': 'Gujarat', 'HP': 'Himachal Pradesh', 'HR': 'Haryana',
+            'JH': 'Jharkhand', 'JK': 'Jammu & Kashmir', 'KA': 'Karnataka', 'KL': 'Kerala', 'LA': 'Ladakh',
+            'LD': 'Lakshadweep', 'MH': 'Maharashtra', 'ML': 'Meghalaya', 'MN': 'Manipur', 'MP': 'Madhya Pradesh',
+            'MZ': 'Mizoram', 'NL': 'Nagaland', 'OD': 'Odisha', 'PB': 'Punjab', 'PY': 'Puducherry',
+            'RJ': 'Rajasthan', 'SK': 'Sikkim', 'TN': 'Tamil Nadu', 'TR': 'Tripura', 'TS': 'Telangana',
+            'UK': 'Uttarakhand', 'UP': 'Uttar Pradesh', 'WB': 'West Bengal'
+        };
+
+        function updateHsrpLivePreview(val) {
+            const clean = (val || '').toUpperCase().trim();
+            const display = document.getElementById('hsrpLiveNumber');
+            const badge = document.getElementById('hsrpStateBadge');
+            if (display) display.textContent = clean || 'MH 14 JM 8899';
+            if (badge) {
+                const prefix = clean.substring(0, 2);
+                badge.textContent = INDIAN_STATES[prefix] ? `${INDIAN_STATES[prefix]} (${prefix})` : 'Bharat HSRP (MoRTH)';
+            }
+        }
+
+        function selectModelPreset(model, fuel, cap, img) {
+            const modelInput = document.getElementById('enrollModelSelect');
+            const fuelSelect = document.getElementById('enrollFuelType');
+            const capInput = document.getElementById('enrollCapacity');
+            const imgInput = document.getElementById('enrollImageUrl');
+            if (modelInput) modelInput.value = model;
+            if (fuelSelect) {
+                fuelSelect.value = fuel;
+                onFuelTypeChange(fuel);
+            }
+            if (capInput) capInput.value = cap;
+            if (imgInput) imgInput.value = img;
+        }
+
+        function onFuelTypeChange(val) {
+            const label = document.getElementById('enrollCapLabel');
+            const cap = document.getElementById('enrollCapacity');
+            if (!label) return;
+            if (val === 'Electric') {
+                label.textContent = 'Battery Capacity (kWh)';
+                if (cap && (cap.value > 120 || cap.value == 57)) cap.value = '40.5';
+            } else if (val === 'CNG') {
+                label.textContent = 'Cylinder (kg)';
+                if (cap) cap.value = '60';
+            } else {
+                label.textContent = 'Tank (Litres)';
+                if (cap && (cap.value < 20 || cap.value == 40.5)) cap.value = '57';
+            }
+        }
+
+        function openEnrollVehicleModal() {
+            if (enrollModal) {
+                enrollModal.classList.remove('opacity-0', 'pointer-events-none');
+                const plateInput = document.getElementById('enrollPlateInput');
+                if (plateInput) updateHsrpLivePreview(plateInput.value);
+            }
+        }
+
+        function closeEnrollVehicleModal() {
+            if (enrollModal) enrollModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        async function handleEnrollSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('enrollSubmitBtn');
+            const origHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span><span>Verifying VAHAN & Enrolling...</span>`;
+            }
+
+            const model = document.getElementById('enrollModelSelect').value;
+            const plate = document.getElementById('enrollPlateInput').value.toUpperCase().trim();
+            const fuel = document.getElementById('enrollFuelType').value;
+            const cap = parseFloat(document.getElementById('enrollCapacity').value) || 50;
+            const odo = parseInt(document.getElementById('enrollOdometer').value) || 1000;
+            const fastagBank = document.getElementById('enrollFastagBank')?.value || 'ICICI Bank FASTag';
+            const img = document.getElementById('enrollImageUrl')?.value || 'assets/images/mahindra_xuv700.jpg';
+
+            const payload = {
+                name: model,
+                plate: plate,
+                fuel_type: fuel,
+                tank_capacity_l: cap,
+                odometer_km: odo,
+                fastag_bank: fastagBank,
+                image_url: img
+            };
+
+            let enrolled = null;
+            if (typeof enrollVehicleToBackend === 'function') {
+                try {
+                    enrolled = await enrollVehicleToBackend(payload);
+                } catch (_) {}
+            }
+
+            const newVin = enrolled ? enrolled.vin : `IND-${plate.replace(/\s+/g, '-')}`;
+            const isEv = fuel.toLowerCase().includes('electric') || fuel.toLowerCase().includes('ev');
+            vehiclesDB[newVin] = {
+                name: model,
+                plate: plate,
+                chassis: 'IND...' + newVin.slice(-4),
+                subtitle: 'Enrolled Indian Vehicle • Telemetry Active',
+                fuelType: fuel,
+                tankLabel: isEv ? 'EV Battery SoC' : 'Fuel Tank Level',
+                fuelPercent: 85.0,
+                fuelLitres: Number((cap * 0.85).toFixed(1)),
+                capacityLitres: cap,
+                rangeKm: isEv ? Math.round(cap * 8.5) : Math.round(cap * 11.5),
+                odometerKm: odo,
+                serviceDueKm: 3500,
+                img: img,
+                fuel: fuel,
+                bank: fastagBank,
+                bal: 1500.00,
+                odo: odo
+            };
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+            }
+
+            closeEnrollVehicleModal();
+            renderIndexFleetCards();
+            switchActiveVehicle(newVin);
+            showToast('Vehicle Enrolled', `${model} (${plate}) successfully connected to your fleet.`);
+        }
+
+        function openProfileModal() {
+            profileModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeProfileModal() {
+            profileModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function openNotificationsModal() {
+            notificationsModal.classList.remove('opacity-0', 'pointer-events-none');
+        }
+        function closeNotificationsModal() {
+            notificationsModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function submitFuelLog(e) {
+            e.preventDefault();
+            const litres = parseFloat(document.getElementById('inputFuelLitres').value) || 0;
+            const price = parseFloat(document.getElementById('inputFuelPrice').value) || 0;
+            const odo = parseInt(document.getElementById('inputFuelOdo').value) || 0;
+
+            const car = vehiclesDB[activeVin];
+            if (car) {
+                car.fuelLitres = Math.min(car.capacityLitres, car.fuelLitres + litres);
+                car.fuelPercent = Math.round((car.fuelLitres / car.capacityLitres) * 100);
+                if (odo > car.odometerKm) car.odometerKm = odo;
+                switchActiveVehicle(activeVin);
+            }
+
+            closeDriverLogModal();
+            showToast('Fuel Record Saved', `Added ${litres} L @ ₹${price}/L (Total ₹${(litres * price).toFixed(0)}).`);
+        }
+
+        function submitOdoLog(e) {
+            e.preventDefault();
+            const newOdo = parseInt(document.getElementById('inputNewOdo').value) || 0;
+            const car = vehiclesDB[activeVin];
+            if (car && newOdo > car.odometerKm) {
+                car.odometerKm = newOdo;
+                switchActiveVehicle(activeVin);
+            }
+            closeDriverLogModal();
+            showToast('Odometer Updated', `Verified reading saved as ${newOdo.toLocaleString()} km.`);
+        }
+
+        function showToast(title, desc) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastDesc').textContent = desc;
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-20');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-20');
+            }, 3200);
+        }
+    </script>
+    <script src="assets/js/motoro-fleet-menu.js"></script>
+</body>
+
+</html>
