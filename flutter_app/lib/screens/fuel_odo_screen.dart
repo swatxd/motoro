@@ -4,13 +4,8 @@ import '../models/vehicle.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/floating_top_nav_bar.dart';
-import 'home_screen.dart';
-import 'garage_screen.dart';
+import '../widgets/master_top_app_bar.dart';
 import 'service_screen.dart';
-import 'fasttag_screen.dart';
-import 'qr_contact_screen.dart';
-import 'account_screen.dart';
-import 'login_screen.dart';
 
 class FuelOdoScreen extends StatefulWidget {
   final VehicleItem? initialVehicle;
@@ -24,14 +19,10 @@ class FuelOdoScreen extends StatefulWidget {
   State<FuelOdoScreen> createState() => _FuelOdoScreenState();
 }
 
-class _FuelOdoScreenState extends State<FuelOdoScreen> with SingleTickerProviderStateMixin {
+class _FuelOdoScreenState extends State<FuelOdoScreen> {
   VehicleItem? _vehicle;
   List<VehicleItem> _allVehicles = [];
   bool _isLoading = false;
-
-  // Pulse animation controller
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
 
   // Fuel telemetry state
   double _fuelPercent = 78.0;
@@ -58,14 +49,6 @@ class _FuelOdoScreenState extends State<FuelOdoScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.35, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
     _vehicle = widget.initialVehicle;
     _initLogs();
     _loadData();
@@ -128,7 +111,6 @@ class _FuelOdoScreenState extends State<FuelOdoScreen> with SingleTickerProvider
 
   @override
   void dispose() {
-    _pulseController.dispose();
     _fuelLitresCtrl.dispose();
     _fuelPriceCtrl.dispose();
     _odoReadingCtrl.dispose();
@@ -275,7 +257,11 @@ class _FuelOdoScreenState extends State<FuelOdoScreen> with SingleTickerProvider
         child: Column(
           children: [
             // MASTER TOP APP BAR
-            _buildMasterTopAppBar(),
+            MasterTopAppBar(
+              currentVehicle: _vehicle,
+              vehicles: _allVehicles,
+              onVehicleChanged: _switchVehicle,
+            ),
 
             // SECONDARY 5-PILL NAVIGATION DOCK
             _buildSecondaryNavDock(),
@@ -314,186 +300,6 @@ class _FuelOdoScreenState extends State<FuelOdoScreen> with SingleTickerProvider
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // 1. MASTER TOP APP BAR
-  Widget _buildMasterTopAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Brand Logo
-          InkWell(
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => HomeScreen(initialVin: _vehicle?.vin)),
-              );
-            },
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryContainer],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.toll_rounded, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'MOTORO',
-                  style: TextStyle(
-                    fontFamily: 'Outfit',
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                    letterSpacing: -0.5,
-                    color: AppColors.onSurface,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'BHARAT',
-                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.primary),
-                      ),
-                      const SizedBox(width: 4),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(2),
-                        child: SizedBox(
-                          width: 12,
-                          height: 8,
-                          child: Column(
-                            children: [
-                              Container(height: 2.66, color: const Color(0xFFFF9933)),
-                              Container(height: 2.66, color: Colors.white),
-                              Container(height: 2.66, color: const Color(0xFF138808)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Right Controls
-          Row(
-            children: [
-              PopupMenuButton<VehicleItem>(
-                initialValue: _vehicle,
-                tooltip: 'Switch Fleet Tag',
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                onSelected: (veh) => _switchVehicle(veh),
-                itemBuilder: (ctx) => _allVehicles.map((v) {
-                  final isCurr = v.vin == _vehicle?.vin;
-                  return PopupMenuItem<VehicleItem>(
-                    value: v,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(v.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                            Text('${v.registrationPlate} • ${v.fuelType}', style: const TextStyle(fontSize: 10, color: AppColors.secondary, fontFamily: 'monospace')),
-                          ],
-                        ),
-                        if (isCurr)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: AppColors.emerald.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
-                            child: Text('Active', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.emerald)),
-                          ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    children: [
-                      FadeTransition(
-                        opacity: _pulseAnimation,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(color: AppColors.emerald, shape: BoxShape.circle),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _vehicle?.registrationPlate ?? 'MH 12 RN 2024',
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'monospace', color: AppColors.onSurface),
-                      ),
-                      const Icon(Icons.arrow_drop_down, size: 16, color: AppColors.secondary),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Profile "VS"
-              InkWell(
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountScreen()));
-                },
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryContainer]),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: const Center(
-                    child: Text('VS', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
-
-              // Logout
-              IconButton(
-                icon: const Icon(Icons.logout_rounded, size: 18, color: AppColors.secondary),
-                onPressed: () {
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-                },
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -723,16 +529,19 @@ class _FuelOdoScreenState extends State<FuelOdoScreen> with SingleTickerProvider
                 ),
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  _buildQuickLitreChip('+10 L', () => setState(() => _fuelLitresCtrl.text = '10.0')),
-                  const SizedBox(width: 6),
-                  _buildQuickLitreChip('+20 L', () => setState(() => _fuelLitresCtrl.text = '20.0')),
-                  const SizedBox(width: 6),
-                  _buildQuickLitreChip('+35 L', () => setState(() => _fuelLitresCtrl.text = '35.0')),
-                  const SizedBox(width: 6),
-                  _buildQuickLitreChip('Full Tank', () => setState(() => _fuelLitresCtrl.text = (_tankCapacity - _fuelLitres).clamp(5.0, _tankCapacity).toStringAsFixed(1))),
-                ],
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildQuickLitreChip('+10 L', () => setState(() => _fuelLitresCtrl.text = '10.0')),
+                    const SizedBox(width: 6),
+                    _buildQuickLitreChip('+20 L', () => setState(() => _fuelLitresCtrl.text = '20.0')),
+                    const SizedBox(width: 6),
+                    _buildQuickLitreChip('+35 L', () => setState(() => _fuelLitresCtrl.text = '35.0')),
+                    const SizedBox(width: 6),
+                    _buildQuickLitreChip('Full Tank', () => setState(() => _fuelLitresCtrl.text = (_tankCapacity - _fuelLitres).clamp(5.0, _tankCapacity).toStringAsFixed(1))),
+                  ],
+                ),
               ),
               const SizedBox(height: 12),
 

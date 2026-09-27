@@ -4,12 +4,7 @@ import '../models/vehicle.dart';
 import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/floating_top_nav_bar.dart';
-import 'home_screen.dart';
-import 'fuel_odo_screen.dart';
-import 'fasttag_screen.dart';
-import 'qr_contact_screen.dart';
-import 'account_screen.dart';
-import 'login_screen.dart';
+import '../widgets/master_top_app_bar.dart';
 import 'payment_gateway_screen.dart';
 
 class ServiceScreen extends StatefulWidget {
@@ -284,31 +279,6 @@ class _ServiceScreenState extends State<ServiceScreen> with SingleTickerProvider
     }
   }
 
-  void _onNavigationTabSelected(int index) {
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen(initialVin: _vehicle?.vin)),
-      );
-    } else if (index == 1) {
-      // Already on ServiceScreen
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => FuelOdoScreen(initialVehicle: _vehicle)),
-      );
-    } else if (index == 3) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => FastTagScreen(initialVehicle: _vehicle)),
-      );
-    } else if (index == 4) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => QrContactScreen(initialVehicle: _vehicle)),
-      );
-    }
-  }
 
   void _openBookingModal({String? preselectedServiceTitle}) {
     showModalBottomSheet(
@@ -525,7 +495,11 @@ class _ServiceScreenState extends State<ServiceScreen> with SingleTickerProvider
           SafeArea(
             child: Column(
               children: [
-                _buildTopAppBar(),
+                MasterTopAppBar(
+                  currentVehicle: vehicle,
+                  vehicles: _allVehicles,
+                  onVehicleChanged: _switchVehicle,
+                ),
                 _buildSecondaryNavDock(),
                 Expanded(
                   child: _isLoading || vehicle == null
@@ -561,258 +535,6 @@ class _ServiceScreenState extends State<ServiceScreen> with SingleTickerProvider
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 1. Master Top App Bar matching service.html
-  Widget _buildTopAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.88),
-        border: Border(
-          bottom: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Brand Logo: MOTORO BHARAT
-          InkWell(
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => HomeScreen(initialVin: _vehicle?.vin)),
-              );
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryContainer],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.toll_rounded, color: Colors.white, size: 22),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        const Text(
-                          'MOTORO',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.5,
-                            color: AppColors.onSurface,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'BHARAT',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(1),
-                                child: Container(
-                                  width: 12,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [Color(0xFFFF9933), Colors.white, Color(0xFF138808)],
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Right Controls: Vehicle Switcher & Profile
-          Row(
-            children: [
-              // Vehicle Dropdown Pill
-              if (_allVehicles.isNotEmpty)
-                PopupMenuButton<VehicleItem>(
-                  tooltip: 'Switch Fleet Vehicle',
-                  initialValue: _vehicle,
-                  onSelected: _switchVehicle,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  color: Colors.white,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceContainer,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.6)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          _vehicle?.registrationPlate ?? 'MH 12 RN 2024',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'monospace',
-                            color: AppColors.onSurface,
-                          ),
-                        ),
-                        const Icon(Icons.expand_more_rounded, size: 16, color: AppColors.secondary),
-                      ],
-                    ),
-                  ),
-                  itemBuilder: (ctx) => _allVehicles.map((v) {
-                    final isSel = v.vin == _vehicle?.vin;
-                    return PopupMenuItem<VehicleItem>(
-                      value: v,
-                      child: Row(
-                        children: [
-                          Icon(
-                            isSel ? Icons.radio_button_checked : Icons.radio_button_off,
-                            color: isSel ? AppColors.primary : AppColors.outline,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  v.name,
-                                  style: TextStyle(
-                                    fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                Text(
-                                  '${v.registrationPlate} • ${v.fuelType}',
-                                  style: const TextStyle(fontSize: 10, color: AppColors.outline),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-              const SizedBox(width: 8),
-
-              // Profile Avatar -> Account Screen
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AccountScreen()),
-                  );
-                },
-                borderRadius: BorderRadius.circular(20),
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryContainer],
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.25),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'VS',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 6),
-
-              // Logout
-              InkWell(
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  );
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.logout_rounded, size: 16, color: AppColors.secondary),
-                ),
-              ),
-            ],
           ),
         ],
       ),

@@ -12,6 +12,7 @@ motoro/
 flutter_app/build/
 .dart_tool/
 .packages
+*.apk
 
 # IDE
 .idea/

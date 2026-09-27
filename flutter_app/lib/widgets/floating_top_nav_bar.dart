@@ -90,9 +90,9 @@ class FloatingTopNavBar extends StatelessWidget {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, __, ___) => destination,
+        pageBuilder: (_, _, _) => destination,
         transitionDuration: const Duration(milliseconds: 180),
-        transitionsBuilder: (_, animation, __, child) {
+        transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
