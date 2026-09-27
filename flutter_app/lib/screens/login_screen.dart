@@ -401,12 +401,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: _isOtpTab ? AppColors.primary : AppColors.secondary,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Mobile OTP',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: _isOtpTab ? AppColors.primary : AppColors.secondary,
+                    Flexible(
+                      child: Text(
+                        'Mobile OTP',
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.subheading(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: _isOtpTab ? AppColors.primary : AppColors.secondary,
+                        ),
                       ),
                     ),
                   ],
@@ -442,12 +445,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: !_isOtpTab ? AppColors.primary : AppColors.secondary,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Email & Password',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: !_isOtpTab ? AppColors.primary : AppColors.secondary,
+                    Flexible(
+                      child: Text(
+                        'Email & Password',
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.subheading(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: !_isOtpTab ? AppColors.primary : AppColors.secondary,
+                        ),
                       ),
                     ),
                   ],
@@ -557,15 +563,19 @@ class _LoginScreenState extends State<LoginScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Standard 10-digit mobile number',
-                style: TextStyle(fontSize: 11, color: AppColors.secondary),
+              Flexible(
+                child: Text(
+                  'Standard 10-digit mobile number',
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall(fontSize: 11, color: AppColors.secondary),
+                ),
               ),
+              const SizedBox(width: 8),
               InkWell(
                 onTap: _quickFillDemoPhone,
-                child: const Text(
+                child: Text(
                   'Use Demo: 98765 43210',
-                  style: TextStyle(
+                  style: AppTypography.label(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,

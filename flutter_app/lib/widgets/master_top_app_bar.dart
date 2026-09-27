@@ -83,13 +83,12 @@ class MasterTopAppBar extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
+                  Text(
                     'MOTORO',
-                    style: TextStyle(
-                      fontFamily: 'Outfit',
+                    style: AppTypography.display(
+                      fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      fontSize: 17,
-                      letterSpacing: -0.5,
+                      letterSpacing: -0.6,
                       color: AppColors.onSurface,
                     ),
                   ),
@@ -137,10 +136,9 @@ class MasterTopAppBar extends StatelessWidget {
                             child: Text(
                               currentVehicle?.registrationPlate ?? 'MH 12 RN 2024',
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: AppTypography.mono(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w700,
-                                fontFamily: 'monospace',
                                 color: AppColors.onSurface,
                               ),
                             ),
@@ -175,18 +173,17 @@ class MasterTopAppBar extends StatelessWidget {
                                   Text(
                                     v.name,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
+                                    style: AppTypography.subheading(
+                                      fontSize: 12.5,
                                       fontWeight:
-                                          isSel ? FontWeight.bold : FontWeight.normal,
+                                          isSel ? FontWeight.w700 : FontWeight.w500,
                                     ),
                                   ),
                                   Text(
                                     '${v.registrationPlate} • ${v.fuelType}',
-                                    style: const TextStyle(
+                                    style: AppTypography.mono(
                                       fontSize: 10,
                                       color: AppColors.outline,
-                                      fontFamily: 'monospace',
                                     ),
                                   ),
                                 ],
@@ -219,13 +216,14 @@ class MasterTopAppBar extends StatelessWidget {
                       ),
                       shape: BoxShape.circle,
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'VS',
-                        style: TextStyle(
+                        style: AppTypography.heading(
                           fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                           color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
